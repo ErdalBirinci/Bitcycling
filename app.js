@@ -167,7 +167,7 @@ const defaults = () => ({
   settings: { notify: true, dataShare: false, twoFA: true, theme: 'light' },
   lastDay: dayKey(),
   /* v2 fields */
-  likes: {}, comments: {}, friends: [], badges: [], notifs: [],
+  friends: [], badges: [], notifs: [],
   streak: 1, rideDays: [], invited: false, suspended: false,
   transferredToday: 0, lastTransferDay: dayKey(),
   inviteCode: null, sessions: null,
