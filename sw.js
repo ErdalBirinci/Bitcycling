@@ -1,7 +1,7 @@
 /* Bitcycling — minimal service worker for the offline shell
    strategy: always network first (fresh content), fall back to cache when offline */
-const CACHE = 'bitcycling-v5';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'bitcycling-demo-v6';
+const ASSETS = ['./', './app.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -29,7 +29,7 @@ self.addEventListener('fetch', e => {
     }).catch(() =>
       caches.match(req).then(hit =>
         hit ||
-        (req.mode === 'navigate' ? caches.match('./index.html') : Response.error())
+        (req.mode === 'navigate' ? caches.match('./app.html') : Response.error())
       )
     )
   );

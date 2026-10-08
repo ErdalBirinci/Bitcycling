@@ -4,658 +4,682 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#059669" />
-<meta name="description" content="Bitcycling — pedal to earn BTCYC and redeem them for real products." />
-<title>Bitcycling — Ride to Earn</title>
-<link rel="manifest" href="manifest.webmanifest" />
+<meta name="description" content="Bitcycling — pedal, earn BTCYC, turn it into real products. Get to know the app and view your earnings panel after logging in." />
+<title>Bitcycling — Pedal to Earn · Showcase &amp; User Panel</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="web.css" />
 </head>
 <body>
 
-<div class="stage">
-  <div class="phone" id="phone">
+<!-- ================= LANDING ================= -->
+<div id="landing">
 
-    <!-- ============ AUTH / ONBOARDING ============ -->
-    <section class="auth" id="authScreen">
-      <div class="auth-glow"></div>
-
-      <!-- Step: Welcome -->
-      <div class="auth-pane is-active" data-pane="welcome">
-        <div class="brand-block">
-          <div class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 48 48" fill="none"><circle cx="13" cy="32" r="9" stroke="currentColor" stroke-width="3"/><circle cx="35" cy="32" r="9" stroke="currentColor" stroke-width="3"/><path d="M13 32l8-16h9l5 16M21 16l10 16M24 12h7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <h1 class="brand-title">Bitcycling</h1>
-          <p class="brand-tag">Ride, earn <strong>BTCYC</strong>, redeem them for real products.</p>
-        </div>
-
-        <div class="feature-strip">
-          <div class="feature"><span class="feature-ico" data-ico="bike"></span><div><b>20 km = 1 BTCYC</b><small>Automatic GPS tracking</small></div></div>
-          <div class="feature"><span class="feature-ico" data-ico="bag"></span><div><b>Real products</b><small>Trade and pay in the market</small></div></div>
-          <div class="feature"><span class="feature-ico" data-ico="ticket"></span><div><b>QR &amp; Bike Fest</b><small>Extra bonus earnings</small></div></div>
-        </div>
-
-        <div class="auth-actions">
-          <button class="btn btn-primary btn-lg" data-auth-go="signup">Create account</button>
-          <button class="btn btn-ghost btn-lg" data-auth-go="login">I already have an account</button>
-          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
-        </div>
-      </div>
-
-      <!-- Step: Sign up -->
-      <div class="auth-pane" data-pane="signup">
-        <button class="icon-btn auth-back" data-auth-back aria-label="Back">←</button>
-        <div class="auth-head">
-          <span class="step-pill">Sign up · 4 steps</span>
-          <h2>Join with your real details</h2>
-          <p>BTCYC balances are tied to a real identity. Fake details, multiple accounts and limit abuse lead to a permanent ban.</p>
-        </div>
-
-        <ol class="stepper" id="signupStepper">
-          <li class="is-on"><span>1</span>Details</li>
-          <li><span>2</span>Selfie</li>
-          <li><span>3</span>2FA</li>
-          <li><span>4</span>Access</li>
-        </ol>
-
-        <!-- 1: details -->
-        <div class="signup-step is-active" data-step="1">
-          <label class="field"><span>First name</span><input type="text" id="suName" placeholder="e.g. Alex" autocomplete="given-name" /></label>
-          <label class="field"><span>Last name</span><input type="text" id="suSurname" placeholder="e.g. Morgan" autocomplete="family-name" /></label>
-          <label class="field"><span>Email</span><input type="email" id="suEmail" placeholder="name@example.com" autocomplete="email" /></label>
-          <label class="field"><span>Mobile phone</span><input type="tel" id="suPhone" placeholder="+1 555 xxx xxxx" autocomplete="tel" /></label>
-          <p class="field-hint">A valid email and phone number are required.</p>
-        </div>
-
-        <!-- 2: selfie -->
-        <div class="signup-step" data-step="2">
-          <div class="selfie-box" id="selfieBox">
-            <div class="selfie-preview" id="selfiePreview">
-              <span class="selfie-placeholder" data-ico="smile"></span>
-            </div>
-            <p class="selfie-note">Upload a selfie taken with your own phone. Your profile photo is matched with your BTCYC account.</p>
-            <div class="row gap">
-              <label class="btn btn-soft">Take with camera<input type="file" id="selfieCam" accept="image/*" capture="user" hidden /></label>
-              <label class="btn btn-soft">Choose from gallery<input type="file" id="selfieFile" accept="image/*" hidden /></label>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3: 2FA -->
-        <div class="signup-step" data-step="3">
-          <div class="panel panel-tint">
-            <b>Two-factor authentication</b>
-            <p>We sent a 6-digit code to your phone. <span class="mono">Demo code: 240519</span></p>
-            <div class="otp-row" id="otpRow">
-              <input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" />
-            </div>
-            <p class="field-hint" id="otpHint">2FA is required for sign-up and login.</p>
-          </div>
-        </div>
-
-        <!-- 4: access fee -->
-        <div class="signup-step" data-step="4">
-          <div class="price-card">
-            <span class="price-tag">App access</span>
-            <div class="price"><span class="cur">€</span>1</div>
-            <p>One-time download fee · no subscription</p>
-            <ul class="price-list">
-              <li>Unlimited GPS distance tracking</li>
-              <li>BTCYC earning and market trades</li>
-              <li>QR events &amp; Bike Fest entry</li>
-            </ul>
-            <div class="pay-methods">
-              <span class="pay-chip is-on"><i data-ico="card"></i> Card</span><span class="pay-chip"><i data-ico="phone"></i> Mobile payment</span><span class="pay-chip"><i data-ico="wallet"></i> PayPal</span>
-            </div>
-          </div>
-          <p class="field-hint">This demo takes no real payment; access is granted instantly.</p>
-        </div>
-
-        <div class="auth-actions">
-          <button class="btn btn-primary btn-lg" id="signupNext">Continue</button>
-        </div>
-      </div>
-
-      <!-- Step: Login -->
-      <div class="auth-pane" data-pane="login">
-        <button class="icon-btn auth-back" data-auth-back aria-label="Back">←</button>
-        <div class="auth-head">
-          <span class="step-pill">Log in</span>
-          <h2>Welcome back</h2>
-          <p>Sign in with your email and password, then confirm your 2FA code.</p>
-        </div>
-        <label class="field"><span>Email</span><input type="email" id="liEmail" placeholder="name@example.com" /></label>
-        <label class="field"><span>Password</span><input type="password" id="liPass" placeholder="••••••••" value="bitcycling" /></label>
-        <div class="panel panel-tint">
-          <b>2FA verification</b>
-          <div class="otp-row" id="otpRow2">
-            <input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" />
-          </div>
-          <p class="field-hint">Demo code: 240519</p>
-        </div>
-        <div class="auth-actions">
-          <button class="btn btn-primary btn-lg" id="loginBtn">Log in</button>
-          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ APP SHELL ============ -->
-    <section class="app" id="appScreen" hidden>
-      <header class="topbar">
-        <div class="topbar-left">
-          <div class="mini-logo" aria-hidden="true">
-            <svg viewBox="0 0 48 48" fill="none"><circle cx="13" cy="32" r="9" stroke="currentColor" stroke-width="4"/><circle cx="35" cy="32" r="9" stroke="currentColor" stroke-width="4"/><path d="M13 32l8-16h9l5 16M21 16l10 16" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="topbar-title">
-            <b>Bitcycling</b>
-            <small id="topbarSub">Sustainable riding</small>
-          </div>
-        </div>
-        <div class="topbar-right">
-          <button class="balance-chip" data-nav="wallet" aria-label="Balance">
-            <span class="coin">₿</span><b id="chipBalance">0.00</b><span class="unit">BTCYC</span>
-          </button>
-          <button class="icon-btn" id="themeBtn" aria-label="Toggle theme"><span id="themeIco"></span></button>
-          <button class="icon-btn" id="notifBtn" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 21a2 2 0 01-3.4 0"/></svg>
-            <i class="dot" id="notifDot"></i>
-          </button>
-        </div>
-      </header>
-
-      <main class="views" id="views">
-
-        <!-- ---------- HOME ---------- -->
-        <section class="view is-active" data-view="home">
-          <div class="greet-row">
-            <div>
-              <p class="eyebrow" id="greetEyebrow">Good morning</p>
-              <h2 class="greet" id="greetName">Hello</h2>
-              <span class="streak-chip" id="streakChip"><i data-ico="flame"></i> <b id="streakNum">1</b>-day streak</span>
-            </div>
-            <button class="avatar" data-nav="profile" id="homeAvatar">B</button>
-          </div>
-
-          <div class="hero-card">
-            <div class="hero-glow"></div>
-            <div class="hero-top">
-              <div>
-                <span class="hero-label">YOUR BTCYC BALANCE</span>
-                <div class="hero-value"><span class="coin big">₿</span><b id="heroBalance">0.00</b></div>
-                <span class="hero-fiat" id="heroFiat">≈ 0.00 € in value</span>
-              </div>
-              <div class="ring" id="dailyRing">
-                <svg viewBox="0 0 96 96">
-                  <circle class="ring-bg" cx="48" cy="48" r="40" />
-                  <circle class="ring-fg" cx="48" cy="48" r="40" id="ringFg" />
-                </svg>
-                <div class="ring-text"><b id="ringKm">0</b><small>/ 100 km</small></div>
-              </div>
-            </div>
-            <div class="hero-actions">
-              <button class="btn btn-light btn-lg" data-nav="ride">Start riding</button>
-              <button class="btn btn-glass" id="qrQuickBtn">Scan QR</button>
-            </div>
-          </div>
-
-          <div class="stat-grid">
-            <div class="stat-card"><span class="stat-ico green" data-ico="route"></span><b id="statTodayKm">0.0</b><small>today km</small></div>
-            <div class="stat-card"><span class="stat-ico gold" data-ico="coin"></span><b id="statTodayEarn">0</b><small>today BTCYC</small></div>
-            <div class="stat-card"><span class="stat-ico blue" data-ico="chart"></span><b id="statTotalKm">0</b><small>total km</small></div>
-            <div class="stat-card"><span class="stat-ico pink" data-ico="ticket"></span><b id="statQr">0</b><small>QR bonus</small></div>
-          </div>
-
-          <div class="section-head"><h3>Ways to earn</h3><span class="badge badge-green">ride / earn</span></div>
-          <div class="earn-scroll">
-            <article class="earn-card" data-nav="ride">
-              <span class="earn-ico" data-ico="bike"></span>
-              <b>Pedal to earn</b>
-              <p>Every 20 km = 1 BTCYC. Automatic credit within the 40 km/h limit via GPS.</p>
-              <span class="earn-link">Ride now →</span>
-            </article>
-            <article class="earn-card" data-nav="events">
-              <span class="earn-ico" data-ico="qr"></span>
-              <b>QR events</b>
-              <p>Scan city- and country-based QR codes to earn extra bonus BTCYC.</p>
-              <span class="earn-link">Scan a code →</span>
-            </article>
-            <article class="earn-card" data-nav="events">
-              <span class="earn-ico" data-ico="flag"></span>
-              <b>Bitcycling Bike Fest</b>
-              <p>Twice a year, race on designated routes; place in the standings and win prizes.</p>
-              <span class="earn-link">Events →</span>
-            </article>
-            <article class="earn-card" data-nav="events">
-              <span class="earn-ico" data-ico="trophy"></span>
-              <b>Competition prizes</b>
-              <p>Earn BTCYC in the longest-distance, most-QR and social media contests.</p>
-              <span class="earn-link">Leaderboards →</span>
-            </article>
-          </div>
-
-          <div class="section-head"><h3>Quests</h3><span class="badge badge-gold" id="questCount">0/5</span></div>
-          <div class="level-card" id="levelCard"></div>
-          <div class="quest-list" id="questList"></div>
-
-          <div class="section-head"><h3>Recent activity</h3><button class="btn btn-link" data-nav="wallet">All</button></div>
-          <div class="list-card" id="homeLedger"></div>
-
-          <div class="section-head"><h3>Community leaderboard</h3><button class="btn btn-link" data-nav="events">Details</button></div>
-          <div class="list-card" id="homeBoard"></div>
-
-          <div class="section-head"><h3>Social feed</h3></div>
-          <div class="feed" id="homeFeed"></div>
-        </section>
-
-        <!-- ---------- RIDE ---------- -->
-        <section class="view" data-view="ride">
-          <div class="ride-map" id="rideMap">
-            <div class="map-leaflet" id="lmap"></div>
-            <svg class="map-grid" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>
-                </linearGradient>
-              </defs>
-              <path class="route-bg" d="M20 200 C 80 120, 120 190, 170 130 S 260 40, 320 90 S 380 60, 386 40" />
-              <path class="route-fg" id="routeFg" d="M20 200 C 80 120, 120 190, 170 130 S 260 40, 320 90 S 380 60, 386 40" />
-            </svg>
-            <div class="map-badges">
-              <span class="pill pill-dark" id="gpsPill">● Simulation</span>
-              <span class="pill pill-dark" id="rideStatusPill">Ready</span>
-            </div>
-            <div class="map-rider" id="mapRider" data-ico="bike"></div>
-          </div>
-
-          <div class="ride-metrics">
-            <div class="metric metric-wide">
-              <small>Distance</small>
-              <b><span id="rideKm">0.00</span><i>km</i></b>
-            </div>
-            <div class="metric"><small>Time</small><b id="rideTime">00:00</b></div>
-            <div class="metric"><small>Eligible km</small><b><span id="rideEligible">0.00</span></b></div>
-            <div class="metric"><small>Avg speed</small><b><span id="rideAvg">0</span><i>km/h</i></b></div>
-          </div>
-
-          <div class="speed-card" id="speedCard">
-            <div class="gauge-head">
-              <small>Current speed</small>
-              <span class="speed-flag" id="speedFlag">Limit 40 km/h</span>
-            </div>
-            <div class="gauge" id="gaugeBox">
-              <svg id="gaugeSvg" viewBox="0 0 200 130" aria-label="Current speed gauge">
-                <path class="track" d="M20 95 A80 80 0 0 1 180 95"/>
-                <path class="zone-ok" d="M20 95 A80 80 0 0 1 134.1 22.6"/>
-                <path class="zone-warn" d="M134.1 22.6 A80 80 0 0 1 164.7 48"/>
-                <path class="zone-bad" d="M164.7 48 A80 80 0 0 1 180 95"/>
-                <g id="gaugeTicks"></g>
-                <line class="limit-mark" x1="156.6" y1="53.9" x2="172.8" y2="42.1"/>
-                <g id="gaugeLabels"></g>
-                <polygon id="gaugeNeedle" points="34,95 100,90 100,100"/>
-                <circle class="needle-hub" cx="100" cy="95" r="7"/>
-              </svg>
-              <div class="gauge-read"><b id="speedBig">0</b><span>km/h</span></div>
-            </div>
-            <p class="speed-note" id="speedNote">Rides above the limit earn no BTCYC; repeats suspend your account.</p>
-          </div>
-
-          <div class="limit-card">
-            <div class="limit-row"><b>Daily limit</b><span><b id="limitKm">0</b> / 100 km</span></div>
-            <div class="bar"><div class="bar-fill" id="limitFill"></div></div>
-            <div class="limit-row sub"><span>Earned today</span><span><b id="limitEarn">0</b> BTCYC</span></div>
-            <div class="limit-row sub"><span>Next credit</span><span id="nextCredit">20.00 km</span></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head"><b>Ride source</b></div>
-            <div class="seg" id="sourceSeg">
-              <button class="is-on" data-source="sim">Simulation</button>
-              <button data-source="gps">Real GPS</button>
-            </div>
-            <div class="seg seg-sub" id="speedSeg">
-              <button class="is-on" data-mult="1">1× real time</button>
-              <button data-mult="60">60×</button>
-              <button data-mult="600">600×</button>
-            </div>
-            <p class="field-hint" id="sourceHint">Simulation speeds up time; speed values are validated in real time against the 40 km/h limit.</p>
-          </div>
-
-          <div class="ride-controls">
-            <button class="btn btn-primary btn-xl" id="rideToggle">Start ride</button>
-            <button class="btn btn-soft btn-xl" id="rideFinish" disabled>Finish and claim earnings</button>
-          </div>
-
-          <div class="panel panel-tint">
-            <b>Rules</b>
-            <ul class="rule-list">
-              <li>Every 20 km = 1 BTCYC; a maximum of 100 km counts per day.</li>
-              <li>The portion above 40 km/h does not convert to BTCYC.</li>
-              <li>Continuously exceeding the speed limit permanently suspends the account.</li>
-              <li>Collecting balance through multiple accounts leads to a permanent ban.</li>
-            </ul>
-          </div>
-
-          <div class="section-head"><h3>Ride history</h3><span class="badge badge-green">route map</span></div>
-          <div class="list-card" id="rideHistory"></div>
-        </section>
-
-        <!-- ---------- MARKET ---------- -->
-        <section class="view" data-view="market">
-          <div class="search-row">
-            <label class="search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-              <input type="search" id="marketSearch" placeholder="Search products, stores…" />
-            </label>
-            <button class="icon-btn" id="filterBtn" aria-label="Filter">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-            </button>
-          </div>
-
-          <div class="chips" id="marketChips">
-            <button class="chip is-on" data-cat="all">All</button>
-            <button class="chip" data-cat="bike">Bikes</button>
-            <button class="chip" data-cat="apparel">Apparel</button>
-            <button class="chip" data-cat="accessories">Accessories</button>
-            <button class="chip" data-cat="nutrition">Nutrition</button>
-            <button class="chip" data-cat="technology">Technology</button>
-          </div>
-
-          <div class="promo" data-cat-jump="bike">
-            <div class="promo-text">
-              <span class="promo-tag">Store rental</span>
-              <b>Put your brand in the spotlight</b>
-              <p>Bike companies open virtual stores in the market section and sell their products to BTCYC holders for a monthly rent.</p>
-            </div>
-            <span class="promo-ico" data-ico="store"></span>
-          </div>
-
-          <div class="section-head"><h3 id="marketCount">Products</h3><span class="badge badge-gold">Trade with BTCYC</span></div>
-          <div class="product-grid" id="productGrid"></div>
-
-          <div class="section-head"><h3>My trades</h3></div>
-          <div class="list-card" id="orderList"></div>
-        </section>
-
-        <!-- ---------- EVENTS ---------- -->
-        <section class="view" data-view="events">
-          <div class="section-head"><h3>QR bonus events</h3><span class="badge badge-green">city &amp; country</span></div>
-          <div class="panel qr-panel">
-            <div class="qr-visual" id="qrVisual">
-              <i></i><i></i><i></i><i></i>
-              <svg viewBox="0 0 100 100" aria-hidden="true">
-                <rect x="6" y="6" width="26" height="26" rx="6" class="qr-p"/><rect x="68" y="6" width="26" height="26" rx="6" class="qr-p"/><rect x="6" y="68" width="26" height="26" rx="6" class="qr-p"/>
-                <path class="qr-p" d="M42 8h8v8h-8zM56 8h8v16h-8zM42 24h8v8h-8zM68 42h26v8H68zM42 42h8v8h-8zM56 56h8v8h-8zM70 62h8v8h-8zM84 76h10v8H84zM42 76h8v8h-8zM56 76h8v16h-8zM42 90h8v4h-8zM68 88h8v6h-8z"/>
-              </svg>
-            </div>
-            <label class="field"><span>Event city</span>
-              <select id="qrCity">
-                <option value="Istanbul">Istanbul - Bosphorus route</option>
-                <option value="Ankara">Ankara — Youth Park</option>
-                <option value="Izmir">Izmir - Waterfront</option>
-                <option value="Berlin">Berlin — Tempelhofer Feld</option>
-                <option value="Amsterdam">Amsterdam — Vondelpark</option>
-              </select>
-            </label>
-            <div class="qr-actions">
-              <button class="btn btn-primary btn-lg" id="qrScanBtn">Scan QR code and claim the bonus</button>
-              <button class="btn btn-soft btn-lg" id="qrCamBtn"><i data-ico="camera"></i> Scan with camera</button>
-            </div>
-            <p class="field-hint">Each successful scan gives a bonus of 1–5 BTCYC. A maximum of 10 codes per day.</p>
-          </div>
-
-          <div class="section-head"><h3>Bitcycling Bike Fest</h3><span class="badge badge-gold">2× a year</span></div>
-          <article class="fest-card">
-            <div class="fest-top">
-              <div>
-                <span class="fest-tag">Spring Tour · May 18</span>
-                <b>Bitcycling Bike Fest ’26</b>
-                <p>A designated 42 km route around Riverside Lake · shuttle from Istanbul</p>
-              </div>
-              <span class="fest-ico" data-ico="flag"></span>
-            </div>
-            <div class="fest-stats">
-              <div><b>42</b><small>km route</small></div>
-              <div><b>15</b><small>BTCYC prize pool</small></div>
-              <div><b>820</b><small>registered riders</small></div>
-            </div>
-            <button class="btn btn-light btn-lg" id="festJoin">Register now</button>
-          </article>
-
-          <div class="section-head"><h3>Active contests</h3></div>
-          <div class="challenge-list">
-            <div class="challenge">
-              <span class="ch-ico" data-ico="route"></span>
-              <div class="ch-body"><b>Longest distance</b><p>5 BTCYC for the top 50 riders with the most km this month.</p>
-                <div class="bar"><div class="bar-fill" id="chDistBar"></div></div>
-                <small id="chDistNote">Your rank: 0</small>
-              </div>
-            </div>
-            <div class="challenge">
-              <span class="ch-ico" data-ico="qr"></span>
-              <div class="ch-body"><b>Most QR scans</b><p>3 BTCYC for the 30 users who scan the most codes.</p>
-                <div class="bar"><div class="bar-fill" id="chQrBar"></div></div>
-                <small id="chQrNote">Codes scanned: 0</small>
-              </div>
-            </div>
-            <div class="challenge">
-              <span class="ch-ico" data-ico="megaphone"></span>
-              <div class="ch-body"><b>Social media contest</b><p>Most engagement on a #Bitcycling post → 8 BTCYC.</p>
-                <button class="btn btn-soft btn-sm" id="shareBtn">Share now</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-head"><h3>Monthly leaderboard</h3></div>
-          <div class="list-card" id="eventsBoard"></div>
-        </section>
-
-        <!-- ---------- WALLET ---------- -->
-        <section class="view" data-view="wallet">
-          <div class="wallet-card">
-            <span class="wallet-label">Total balance</span>
-            <div class="wallet-value"><span class="coin big">₿</span><b id="walletBalance">0.00</b></div>
-            <div class="wallet-meta">
-              <div><small>Total earned</small><b id="walletEarned">0.00</b></div>
-              <div><small>Spent</small><b id="walletSpent">0.00</b></div>
-              <div><small>≈ Euro</small><b id="walletFiat">€0.00</b></div>
-            </div>
-          </div>
-
-          <div class="addr-card">
-            <div class="addr-head">
-              <span class="addr-label">My wallet address</span>
-              <button class="btn btn-link btn-sm" id="copyAddr">Copy</button>
-            </div>
-            <div class="addr-code" id="walletAddr">BCYC-••••-••••</div>
-            <p class="addr-note">Every Bitcycling user has a unique wallet. Share your address to receive BTCYC.</p>
-            <div class="addr-actions">
-              <button class="btn btn-primary" id="sendBtn">Send transfer</button>
-              <button class="btn btn-soft" id="receiveBtn">Get my address</button>
-            </div>
-          </div>
-
-          <div class="mini-cards">
-            <div class="mini-card"><span data-ico="bike"></span><div><b id="wRides">0</b><small>rides</small></div></div>
-            <div class="mini-card"><span data-ico="route"></span><div><b id="wKm">0</b><small>km</small></div></div>
-            <div class="mini-card"><span data-ico="qr"></span><div><b id="wQr">0</b><small>QR</small></div></div>
-          </div>
-
-          <div class="chips" id="ledgerChips">
-            <button class="chip is-on" data-lt="all">All</button>
-            <button class="chip" data-lt="earn">Earnings</button>
-            <button class="chip" data-lt="spend">Spending</button>
-            <button class="chip" data-lt="bonus">Bonus</button>
-            <button class="chip" data-lt="transfer">Transfer</button>
-          </div>
-
-          <div class="list-card" id="walletLedger"></div>
-          <p class="foot-note">BTCYC aims to gain commodity value over the long term; cash transactions will be possible once it is listed on crypto exchanges.</p>
-        </section>
-
-        <!-- ---------- PROFILE ---------- -->
-        <section class="view" data-view="profile">
-          <div class="profile-card">
-            <div class="profile-avatar" id="profileAvatar">B</div>
-            <div class="profile-info">
-              <b id="profileName">Bitcycling User</b>
-              <span id="profileEmail">—</span>
-              <span id="profilePhone">—</span>
-            </div>
-            <div class="verify-row">
-              <span class="pill pill-green" id="pillVerified">✓ Identity verified</span>
-              <span class="pill pill-blue" id="pill2fa">2FA on</span>
-              <span class="pill pill-gold" id="levelPill">★ Lv.—</span>
-            </div>
-          </div>
-
-          <div class="section-head"><h3>Account security</h3></div>
-          <div class="list-card">
-            <div class="row-item">
-              <div><b>Two-factor authentication</b><small>SMS + app code</small></div>
-              <label class="switch"><input type="checkbox" id="toggle2fa" checked /><i></i></label>
-            </div>
-            <div class="row-item">
-              <div><b>Speed violation history</b><small id="violationText">No violations — clean</small></div>
-              <span class="pill pill-green" id="violationPill">Clean</span>
-            </div>
-            <div class="row-item">
-              <div><b>Multi-account check</b><small>Monitored via device and location signature</small></div>
-              <span class="pill pill-green">Single account</span>
-            </div>
-            <div class="row-item">
-              <div><b>Profile selfie</b><small>Upload a new selfie</small></div>
-              <label class="btn btn-soft btn-sm">Upload<input type="file" id="profileSelfie" accept="image/*" hidden /></label>
-            </div>
-          </div>
-
-          <div class="section-head"><h3>Devices and sessions</h3></div>
-          <div class="list-card" id="sessionList"></div>
-
-          <div class="section-head"><h3>Statistics</h3></div>
-          <div class="stat-grid">
-            <div class="stat-card"><span class="stat-ico green" data-ico="route"></span><b id="pTotalKm">0</b><small>total km</small></div>
-            <div class="stat-card"><span class="stat-ico gold" data-ico="coin"></span><b id="pTotalEarn">0</b><small>total BTCYC</small></div>
-            <div class="stat-card"><span class="stat-ico blue" data-ico="timer"></span><b id="pTotalTime">0h</b><small>pedaling time</small></div>
-            <div class="stat-card"><span class="stat-ico pink" data-ico="medal"></span><b id="pRank">—</b><small>rank</small></div>
-          </div>
-
-          <div class="section-head"><h3>Charts</h3><span class="badge badge-green">last 7 / 30 days</span></div>
-          <div class="chart-card">
-            <div class="chart-head"><b>Last 7 days · distance</b><span id="chartWeekTotal">0 km</span></div>
-            <div class="bars" id="chartWeek"></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-head"><b>Last 30 days · BTCYC earned</b><span id="chartEarnTotal">0 BTCYC</span></div>
-            <svg class="spark" id="chartEarn" viewBox="0 0 300 110" preserveAspectRatio="none" aria-label="Earnings chart"></svg>
-            <div class="chart-axis" id="chartEarnAxis"></div>
-          </div>
-
-          <div class="section-head"><h3>Badges</h3><span class="badge badge-gold" id="badgeCount">0 / 11</span></div>
-          <div class="badge-grid" id="badgeGrid"></div>
-
-          <div class="section-head"><h3>Streak and goal</h3></div>
-          <div class="streak-card" id="streakCard"></div>
-
-          <div class="section-head"><h3>Friends and invites</h3></div>
-          <div class="panel">
-            <div class="invite-row">
-              <div><small>Your invite code</small><b class="mono" id="inviteCode">—</b></div>
-              <button class="btn btn-soft btn-sm" id="copyInvite">Copy</button>
-            </div>
-            <p class="field-hint">When a friend enters your code you both get <b>+2 BTCYC</b>. You earn <b>+2 BTCYC</b> for each friend who joins with your invite code.</p>
-            <label class="field"><span>Your friend's invite code</span><input id="friendCode" placeholder="e.g. PEDAL5" autocomplete="off" /></label>
-            <button class="btn btn-primary" id="applyFriendCode" style="width:100%">Redeem code and claim the bonus</button>
-          </div>
-          <div class="list-card" id="friendList" style="margin-top:10px"></div>
-
-          <div class="section-head"><h3>Access and payments</h3></div>
-          <div class="list-card">
-            <div class="row-item">
-              <div><b>App access fee</b><small>One-time · Mar 1, 2026</small></div>
-              <span class="pill pill-green">€1 paid</span>
-            </div>
-            <div class="row-item">
-              <div><b>Data partnerships</b><small>Sharing of engagement user data (6 months)</small></div>
-              <label class="switch"><input type="checkbox" id="toggleData" /><i></i></label>
-            </div>
-          </div>
-
-          <div class="section-head"><h3>Settings</h3></div>
-          <div class="list-card">
-            <div class="row-item"><div><b>Earning notifications</b><small>Alert me when BTCYC is credited</small></div>
-              <label class="switch"><input type="checkbox" id="toggleNotify" checked /><i></i></label></div>
-            <div class="row-item"><div><b>Bike speed limit</b><small>Maximum speed for BTCYC</small></div><span class="mono muted">40 km/h</span></div>
-            <div class="row-item"><div><b>Language</b><small>Interface language</small></div><span class="mono muted">EN</span></div>
-            <div class="row-item"><div><b>Theme</b><small>Light / dark appearance</small></div>
-              <div class="seg seg-mini" id="themeSeg">
-                <button data-theme-set="light">Light</button>
-                <button data-theme-set="dark">Dark</button>
-              </div>
-            </div>
-            <div class="row-item"><div><b>Daily transfer limit</b><small>Sent today</small></div><span class="mono muted" id="transferLeft">100 / 100</span></div>
-            <div class="row-item"><div><b>Wallet transfers</b><small>All transfers protected by 2FA</small></div><span class="pill pill-green">Secure</span></div>
-            <button class="row-item row-btn" id="resetBtn"><div><b class="danger">Reset demo data</b><small>Deletes all progress</small></div><span>↺</span></button>
-            <button class="row-item row-btn" id="logoutBtn"><div><b>Log out</b><small>Sign out</small></div><span>→</span></button>
-          </div>
-        </section>
-      </main>
-
-      <!-- ---------- BOTTOM NAV ---------- -->
-      <nav class="tabbar" id="tabbar">
-        <button class="tab is-on" data-nav="home">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1z"/></svg><span>Home</span>
-        </button>
-        <button class="tab" data-nav="ride">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17l5-9h4l4 9M10 8l6.5 9M14 5h4"/></svg><span>Ride</span>
-        </button>
-        <button class="tab" data-nav="market">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 7h16l-1.2 12.1a1 1 0 01-1 .9H6.2a1 1 0 01-1-.9z"/><path d="M9 7a3 3 0 016 0"/></svg><span>Market</span>
-        </button>
-        <button class="tab" data-nav="events">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18" stroke-linecap="round"/></svg><span>Events</span>
-        </button>
-        <button class="tab" data-nav="profile">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0115 0"/></svg><span>Profile</span>
-        </button>
+  <header class="snav" id="snav">
+    <div class="wrap snav-in">
+      <a class="brand" href="#top"><span class="brand-mark" data-ico="bike"></span> Bitcycling</a>
+      <nav class="snav-links">
+        <a href="#how">How it works</a>
+        <a href="#earn">Earnings</a>
+        <a href="#features">Features</a>
+        <a href="#market">Market</a>
+        <a href="#faq">FAQ</a>
       </nav>
-    </section>
-
-    <!-- ============ MODALS ============ -->
-    <div class="modal-root" id="modalRoot" hidden>
-      <div class="modal-back" data-modal-close></div>
-      <div class="modal" id="modalBox" role="dialog" aria-modal="true">
-        <button class="icon-btn modal-x" data-modal-close aria-label="Close">✕</button>
-        <div class="modal-body" id="modalBody"></div>
+      <div class="snav-cta">
+        <a class="btn btn-soft" href="#login">Log in</a>
+        <a class="btn btn-primary" href="app.html">Open the app</a>
       </div>
     </div>
+  </header>
 
-    <div class="toast-root" id="toastRoot" aria-live="polite"></div>
+  <main>
 
-    <!-- ============ ACCOUNT SUSPENDED ============ -->
-    <div class="suspend-root" id="suspendRoot" hidden>
-      <div class="suspend-card">
-        <span class="suspend-ico" data-ico="ban"></span>
-        <h2>Account suspended</h2>
-        <p id="suspendReason">Your account has been permanently suspended for repeatedly violating the 40 km/h speed limit.</p>
-        <div class="list-card" id="suspendList"></div>
-        <div class="suspend-actions">
-          <button class="btn btn-primary btn-lg" id="appealBtn">Appeal</button>
-          <button class="btn btn-soft btn-lg" id="suspendDemo">Demo: reopen account</button>
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="wrap hero-in">
+        <div class="hero-copy">
+          <span class="eyebrow"><span data-ico="route"></span> Social cycling · reward platform</span>
+          <h1>Pedal to earn <em>BTCYC</em>,<br>redeem it for real products.</h1>
+          <p class="hero-sub">Bitcycling is the mobile app that turns every kilometer into a reward. GPS-measured
+            <b>20&nbsp;km = 1&nbsp;BTCYC</b>; convert your savings into real products in the market — from helmets
+            to e-bikes — and transfer them to your friends.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary btn-lg" href="app.html"><span data-ico="bike"></span> Sign up free</a>
+            <a class="btn btn-ghost btn-lg" href="#login"><span data-ico="lock"></span> Log in to the panel</a>
+          </div>
+          <div class="hero-facts">
+            <div><b>20 km</b><small>= 1 BTCYC earned</small></div>
+            <div><b>100 km</b><small>daily earning cap</small></div>
+            <div><b>0.80 €</b><small>BTCYC store value</small></div>
+          </div>
+
+          <div class="hero-social">
+            <div class="ava-stack" aria-hidden="true"><span>DK</span><span>EY</span><span>MB</span><span>+9k</span></div>
+            <p><span class="stars" aria-hidden="true"><svg viewBox="0 0 120 24"><path d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(24 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(48 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(72 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path class="dim" transform="translate(96 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/></svg></span>
+              <b>4.8/5</b> · 12,400+ cyclists turn their routes into BTCYC</p>
+          </div>
         </div>
-        <p class="field-hint">Appeals are reviewed within 48 hours. Verified accounts are reopened.</p>
+
+        <div class="hero-art">
+          <span class="art-orb orb-a" aria-hidden="true"></span>
+          <span class="art-orb orb-b" aria-hidden="true"></span>
+          <svg class="hero-route" viewBox="0 0 460 700" fill="none" aria-hidden="true">
+            <path class="rt" d="M6 170C60 60 190 8 300 26c100 16 152 94 152 184" />
+            <path class="rt" d="M8 520c32 100 152 170 272 156 100-12 168-80 174-176" />
+            <circle class="route-pin" cx="6" cy="170" r="6" />
+            <circle class="route-pin is-end" cx="454" cy="500" r="6" />
+          </svg>
+
+          <div class="fc fc-earn" aria-hidden="true">
+            <span class="fc-ico" data-ico="coin"></span>
+            <span><b>+1 BTCYC</b><small>20 km completed</small></span>
+          </div>
+          <div class="fc fc-pace" aria-hidden="true">
+            <span class="fc-ico em" data-ico="zap"></span>
+            <span><b>17.2 km/h</b><small>average pace · within limit</small></span>
+          </div>
+          <div class="fc fc-qr" aria-hidden="true">
+            <span class="fc-ico gold" data-ico="qr"></span>
+            <span><b>QR +2 BTCYC</b><small>city bonus</small></span>
+          </div>
+
+          <div class="phone-mock" aria-hidden="true">
+            <div class="pm-screen">
+
+              <!-- app top bar -->
+              <div class="pm-topbar">
+                <div class="pm-topleft">
+                  <span class="pm-logo">
+                    <svg viewBox="0 0 48 48" fill="none"><circle cx="13" cy="32" r="9" stroke="currentColor" stroke-width="4"/><circle cx="35" cy="32" r="9" stroke="currentColor" stroke-width="4"/><path d="M13 32l8-16h9l5 16M21 16l10 16" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <span class="pm-title"><b>Bitcycling</b><small>Sustainable riding</small></span>
+                </div>
+                <div class="pm-topright">
+                  <span class="pm-chip"><span class="pm-coin">₿</span><b id="pmChipBal">13.75</b><small>BTCYC</small></span>
+                  <span class="pm-ibtn" data-ico="moon"></span>
+                  <span class="pm-ibtn pm-bell" data-ico="bell"><i class="pm-dot"></i></span>
+                </div>
+              </div>
+
+              <!-- main screen -->
+              <div class="pm-views">
+                <div class="pm-greet">
+                  <div>
+                    <p class="pm-eyebrow" id="pmGreetEyebrow">Good afternoon</p>
+                    <p class="pm-greetname" id="pmGreetName">Alex, ready to ride?</p>
+                    <span class="pm-streak" data-ico="flame"><b id="pmStreak">3</b>-day streak</span>
+                  </div>
+                  <span class="pm-avatar" id="pmAvatar">AM</span>
+                </div>
+
+                <div class="pm-hero">
+                  <div class="pm-heroglow"></div>
+                  <div class="pm-herotop">
+                    <div>
+                      <span class="pm-herolabel">YOUR BTCYC BALANCE</span>
+                      <div class="pm-herovalue"><span class="pm-coin big">₿</span><b id="pmBalance">13.75</b></div>
+                      <span class="pm-herofiat" id="pmFiat">≈ 11.00 € in value</span>
+                    </div>
+                    <div class="pm-ring">
+                      <svg viewBox="0 0 96 96">
+                        <circle class="pm-ringbg" cx="48" cy="48" r="40" />
+                        <circle class="pm-ringfg" cx="48" cy="48" r="40" id="pmRingFg" />
+                      </svg>
+                      <div class="pm-ringtext"><b id="pmRingKm">12.4</b><small>/ 100 km</small></div>
+                    </div>
+                  </div>
+                  <div class="pm-heroactions">
+                    <span class="pm-btnlight">Start riding</span>
+                    <span class="pm-btnglass">Scan QR</span>
+                  </div>
+                </div>
+
+                <div class="pm-stats">
+                  <div><span class="green" data-ico="route"></span><b id="pmTodayKm">12.4</b><small>today km</small></div>
+                  <div><span class="gold" data-ico="coin"></span><b id="pmTodayEarn">1</b><small>today BTCYC</small></div>
+                  <div><span class="blue" data-ico="chart"></span><b id="pmTotalKm">62.4</b><small>total km</small></div>
+                  <div><span class="pink" data-ico="ticket"></span><b id="pmQr">7</b><small>QR bonus</small></div>
+                </div>
+
+                <div class="pm-sechead"><b>Ways to earn</b><span class="pm-badge green">ride / earn</span></div>
+                <div class="pm-earn">
+                  <article>
+                    <span data-ico="bike"></span>
+                    <b>Pedal to earn</b>
+                    <p>Every 20 km = 1 BTCYC. Automatic credit by GPS within the 40 km/h limit.</p>
+                    <i>Start riding →</i>
+                  </article>
+                  <article>
+                    <span data-ico="qr"></span>
+                    <b>QR events</b>
+                    <p>Scan city- and country-based QR codes to earn extra bonus BTCYC.</p>
+                    <i>Scan a code →</i>
+                  </article>
+                </div>
+
+                <div class="pm-sechead"><b>Quests</b><span class="pm-badge gold">1/5</span></div>
+                <div class="pm-questcut">
+                  <span data-ico="target"></span>
+                  <div><b>Pedal 10 km</b><small><i style="width:100%"></i></small></div>
+                </div>
+              </div>
+
+              <!-- bottom navigation -->
+              <nav class="pm-tabbar">
+                <span class="is-on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1z"/></svg><i>Home</i></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17l5-9h4l4 9M10 8l6.5 9M14 5h4"/></svg><i>Ride</i></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 7h16l-1.2 12.1a1 1 0 01-1 .9H6.2a1 1 0 01-1-.9z"/><path d="M9 7a3 3 0 016 0"/></svg><i>Market</i></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18" stroke-linecap="round"/></svg><i>Events</i></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0115 0"/></svg><i>Profile</i></span>
+              </nav>
+
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <!-- NUMBERS + TICKER -->
+    <section class="band stats-band" aria-label="Platform numbers">
+      <div class="wrap">
+        <div class="stats-in reveal">
+          <div class="sb-stat"><span class="sb-ico" data-ico="users"></span><b data-count="12400" data-suffix="+">0</b><small>registered cyclists</small></div>
+          <div class="sb-stat"><span class="sb-ico" data-ico="route"></span><b data-count="1860000" data-suffix=" km">0</b><small>distance pedaled</small></div>
+          <div class="sb-stat"><span class="sb-ico" data-ico="coin"></span><b data-count="93000" data-suffix=" BTCYC">0</b><small>rewards distributed</small></div>
+          <div class="sb-stat"><span class="sb-ico" data-ico="store"></span><b data-count="16">0</b><small>market &amp; rental products</small></div>
+        </div>
+      </div>
+      <div class="ticker" aria-hidden="true">
+        <div class="tk-track">
+          <span class="tk-seq"><b>20 km = 1 BTCYC</b><i></i><span>Ride. Earn. Repeat.</span><i></i><b>100 km/day cap</b><i></i><span>40 km/h safe riding</span><i></i><b>1 BTCYC ≈ 0.80 €</b><i></i><span>Bike Fest · May &amp; Sep</span><i></i><b>2FA-secured transfers</b><i></i></span>
+          <span class="tk-seq"><b>20 km = 1 BTCYC</b><i></i><span>Ride. Earn. Repeat.</span><i></i><b>100 km/day cap</b><i></i><span>40 km/h safe riding</span><i></i><b>1 BTCYC ≈ 0.80 €</b><i></i><span>Bike Fest · May &amp; Sep</span><i></i><b>2FA-secured transfers</b><i></i></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="band alt" id="how">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="navigation"></span> 4 steps</span>
+          <h2>How the app works</h2>
+          <p>From sign-up to trading: a transparent, step-by-step system that takes less than five minutes.</p>
+        </div>
+        <div class="steps">
+          <div class="step reveal">
+            <span class="step-n">01</span>
+            <span class="step-ico" data-ico="camera"></span>
+            <b>Create your account</b>
+            <p>Real name, email, phone; selfie identity verification and 2FA setup. One-time €1 access fee.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-n">02</span>
+            <span class="step-ico" data-ico="bike"></span>
+            <b>Pedal to earn</b>
+            <p>The app measures your distance with GPS in the background. Every 20 km is automatically credited to your balance as 1 BTCYC.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-n">03</span>
+            <span class="step-ico" data-ico="qr"></span>
+            <b>Collect the bonuses</b>
+            <p>Extra BTCYC from city QR boards, Bike Fest and contests; quests and badges earn you XP.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-n">04</span>
+            <span class="step-ico" data-ico="bag"></span>
+            <b>Trade &amp; spend</b>
+            <p>Turn your savings into real products in the market, transfer to a friend with 2FA, or spend them in the rental shop.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EARNINGS + CALCULATOR -->
+    <section class="band" id="earn">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="coin"></span> How earning works</span>
+          <h2>How many km do you ride a week? Find out</h2>
+          <p>The rules are clear: distance earns, the speed cap is respected, and up to 100 km counts every day.</p>
+        </div>
+
+        <div class="calc-grid">
+          <div class="card calc reveal">
+            <h3>BTCYC earnings calculator</h3>
+            <label class="calc-lab" for="calcKm">Your weekly riding distance</label>
+            <div class="calc-in">
+              <input type="number" id="calcKm" min="0" max="700" step="5" value="150" inputmode="numeric" />
+              <span>km / week</span>
+            </div>
+            <input type="range" id="calcRange" min="0" max="700" step="5" value="150" aria-label="Weekly km" />
+
+            <div class="calc-out">
+              <div><small>Weekly earnings</small><b><span id="calcWeekBtc">7.50</span> <i>BTCYC</i></b></div>
+              <div><small>Monthly earnings</small><b><span id="calcMonthBtc">32.50</span> <i>BTCYC</i></b></div>
+              <div><small>Monthly value</small><b><span id="calcMonthEur">26.00</span> <i>€</i></b></div>
+            </div>
+
+            <div class="calc-note" id="calcNote"><span data-ico="bike"></span><span id="calcNoteTxt"></span></div>
+            <p class="calc-hint">Average <b id="calcDayKm">21.4 km</b> a day · sections above 40 km/h don't count toward earnings.
+              Monthly figures use 4.33 weeks.</p>
+          </div>
+
+          <div class="rules reveal">
+            <div class="rule"><b><span data-ico="coin"></span> 20 km = 1 BTCYC</b><p>Distance is measured by GPS and credited to your balance automatically every full 20 km.</p></div>
+            <div class="rule"><b><span data-ico="route"></span> 100 km / day</b><p>Daily earning cap. Anything above is still logged, but no credit is produced; it resets the next day.</p></div>
+            <div class="rule"><b><span data-ico="ban"></span> 40 km/h cap</b><p>Sections above the cap don't count toward earnings; 3 violations temporarily suspend the account.</p></div>
+            <div class="rule gold"><b><span data-ico="money"></span> 1 BTCYC = 0.80 €</b><p>See market prices in € and follow every trade transparently, cent by cent.</p></div>
+            <div class="rule afford">
+              <b><span data-ico="store"></span> What can you get with your monthly earnings?</b>
+              <div class="afford-chips" id="affordChips"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="band alt" id="features">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="trophy"></span> All in one app</span>
+          <h2>Not just distance — a full cycling life</h2>
+          <p>From maps to community, quests to the shop: eight modules that turn your rides into rewards.</p>
+        </div>
+        <div class="feat-grid">
+          <div class="feat reveal"><span class="feat-ico" data-ico="map"></span><b>Live map &amp; route</b><p>Smooth tracking with route, time and speed indicators while you ride; finished rides are archived on the map.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="qr"></span><b>QR city bonus</b><p>Scan the event boards around the city; real QR scanning with the camera or a one-tap simulation.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="flag"></span><b>Bike Fest</b><p>Twice a year, meetups on the Riverside and city routes. Participation badge and volunteer bonuses.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="trophy"></span><b>Contests</b><p>Monthly distance and QR rankings; medals for the top three, a crown for the leader. Rewards refresh every month.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="target"></span><b>Quest · Badge · Level</b><p>Daily and weekly quests, 11 badges, 8 levels. Every completed quest pays XP and BTCYC.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="store"></span><b>Market &amp; rental shop</b><p>Helmets, jackets, light sets, GPS, e-bikes… trade BTCYC across a 16-product market.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="wallet"></span><b>Wallet &amp; transfer</b><p>Public wallet ID, 2FA-approved wallet-to-wallet transfers and a daily 100 BTCYC limit.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="shield"></span><b>Security &amp; transparency</b><p>Real-name verification, 2FA, session tracking, violation records and a complete BTCYC ledger.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BIKE FEST / EVENTS -->
+    <section class="band fest" id="events">
+      <span class="fest-glow g1" aria-hidden="true"></span>
+      <span class="fest-glow g2" aria-hidden="true"></span>
+      <div class="wrap fest-in">
+        <div class="fest-copy reveal">
+          <span class="eyebrow on-dark"><span data-ico="flag"></span> Events · 2× a year</span>
+          <h2>Meet us at Bike Fest</h2>
+          <p>Group rides on the Riverside and city routes in May and September. Participation badge,
+            volunteer bonus and QR codes that open only on event days are waiting for you.</p>
+          <div class="fest-dates">
+            <div class="fd"><b>May 17</b><small>Bike Fest · Spring</small></div>
+            <div class="fd"><b>Sep 20</b><small>Bike Fest · Fall</small></div>
+            <div class="fd gold"><b>+50</b><small>BTCYC prize pool</small></div>
+          </div>
+          <a class="btn btn-light btn-lg" href="app.html">See events →</a>
+        </div>
+
+        <div class="fest-visual reveal" aria-hidden="true">
+          <div class="fv-card">
+            <div class="fv-top">
+              <span class="fv-ico" data-ico="trophy"></span>
+              <span><b>Bike Fest · Spring</b><small>May 17 · Riverside route</small></span>
+              <span class="fv-live">live</span>
+            </div>
+            <ul class="fv-board">
+              <li><span class="fv-rank gold">1</span><span class="fv-ava">EK</span><b>@ellak</b><i>142 km</i></li>
+              <li class="me"><span class="fv-rank">2</span><span class="fv-ava">AM</span><b>You</b><i>128 km</i></li>
+              <li><span class="fv-rank">3</span><span class="fv-ava">MP</span><b>@max.pdl</b><i>117 km</i></li>
+            </ul>
+            <div class="fv-foot"><span data-ico="medal"></span> Top 3 medals · crown badge for the leader</div>
+          </div>
+          <div class="fv-badge"><span data-ico="flag"></span><b>Participation +2 BTCYC</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKET PREVIEW -->
+    <section class="band" id="market">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="bag"></span> Market preview</span>
+          <h2>Your saved BTCYC turns into real products here</h2>
+          <p>Prices are shown in both BTCYC and €; your order is prepared after the trade is confirmed.</p>
+        </div>
+        <div class="shop-grid">
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">Vento Helmets</span><span data-ico="helmet"></span></div>
+            <div class="shop-body"><b>Vento Aero Racing Helmet</b>
+              <span class="shop-price">14 BTCYC <small>≈ 11.20 €</small></span></div>
+          </div>
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">PedalWear</span><span data-ico="shirt"></span></div>
+            <div class="shop-body"><b>Windproof Jacket</b>
+              <span class="shop-price">22 BTCYC <small>≈ 17.60 €</small></span></div>
+          </div>
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">LumenRide</span><span data-ico="navigation"></span></div>
+            <div class="shop-body"><b>GPS Bike Computer</b>
+              <span class="shop-price">38 BTCYC <small>≈ 30.40 €</small></span></div>
+          </div>
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">TrailWorks</span><span data-ico="wheel"></span></div>
+            <div class="shop-body"><b>Disc Wheelset</b>
+              <span class="shop-price">95 BTCYC <small>≈ 76.00 €</small></span></div>
+          </div>
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">FuelLab</span><span data-ico="zap"></span></div>
+            <div class="shop-body"><b>Energy Gel · 12-pack</b>
+              <span class="shop-price">6 BTCYC <small>≈ 4.80 €</small></span></div>
+          </div>
+          <div class="shop-card reveal">
+            <div class="shop-img"><span class="shop-store">NovaCycle</span><span data-ico="bike"></span></div>
+            <div class="shop-body"><b>Electric City Bike</b>
+              <span class="shop-price">480 BTCYC <small>≈ 384.00 €</small></span></div>
+          </div>
+        </div>
+        <p class="shop-note reveal">…and 10 more products. <a href="app.html">See the full market in the app →</a></p>
+      </div>
+    </section>
+
+    <!-- COMMUNITY REVIEWS -->
+    <section class="band alt" id="reviews">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="heart"></span> Community</span>
+          <h2>What riders are saying</h2>
+          <p>From the commute to weekend tours — real ride stories that turned into BTCYC.</p>
+        </div>
+        <div class="quotes">
+          <figure class="quote reveal">
+            <span class="stars five" aria-hidden="true"><svg viewBox="0 0 120 24"><path d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(24 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(48 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(72 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(96 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/></svg></span>
+            <blockquote>“I started cycling to work instead of taking the metro. By the end of the month I'd saved
+              20 BTCYC and bought a new light set in the market — sport has become an investment I make in myself.”</blockquote>
+            <figcaption><span class="q-ava">SK</span><span><b>Sara K.</b><small>Commute · member for 3 months</small></span>
+              <span class="q-metric">148 km/week</span></figcaption>
+          </figure>
+          <figure class="quote reveal">
+            <span class="stars five" aria-hidden="true"><svg viewBox="0 0 120 24"><path d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(24 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(48 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(72 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(96 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/></svg></span>
+            <blockquote>“The 40 km/h cap felt strange at first, but now everyone rides at the same safe pace.
+              To break into the top three I leave home 10 km earlier every morning.”</blockquote>
+            <figcaption><span class="q-ava">MP</span><span><b>Max P.</b><small>City rides · member for 6 months</small></span>
+              <span class="q-metric">34-day streak</span></figcaption>
+          </figure>
+          <figure class="quote reveal">
+            <span class="stars five" aria-hidden="true"><svg viewBox="0 0 120 24"><path d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(24 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(48 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(72 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/><path transform="translate(96 0)" d="M12 2.6l3.1 6.3 6.9.9-5 4.8 1.2 6.9L12 18.2 5.8 21.6l1.2-6.9-5-4.8 6.9-.9z"/></svg></span>
+            <blockquote>“Hunting QR codes around the city became a game of its own. At Bike Fest I met up
+              with my team and we split the prize pool; the badges look great on my profile.”</blockquote>
+            <figcaption><span class="q-ava">EK</span><span><b>Ella K.</b><small>Club captain · member for 1 year</small></span>
+              <span class="q-metric">11 badges</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="band alt" id="faq">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="notebook"></span> Frequently asked</span>
+          <h2>Frequently asked questions</h2>
+        </div>
+        <div class="faq reveal">
+          <details open>
+            <summary>What is BTCYC — is it real money?</summary>
+            <div class="faq-a">BTCYC is the virtual reward unit you earn by riding. It is traded in the market for
+              real products (1 BTCYC ≈ 0.80 €) and can be transferred between wallets with 2FA approval. It is not a
+              currency you can withdraw to a bank account; its purpose is to reward the sport.</div>
+          </details>
+          <details>
+            <summary>How is my distance measured?</summary>
+            <div class="faq-a">The app tracks your rides with GPS in the background; distance, duration and average
+              speed are recorded. Every 20 km automatically credits 1 BTCYC to your balance. Each completed ride is
+              archived on the map and appears in the “Recent activity” ledger.</div>
+          </details>
+          <details>
+            <summary>Why is there a 40 km/h cap, and what does the 100 km daily limit mean?</summary>
+            <div class="faq-a">The platform encourages safe riding: sections above 40 km/h don't count toward
+              earnings and go on your violation record; after three violations the account is temporarily suspended
+              (you can appeal in the panel). The daily 100 km limit exists to prevent earning abuse — the excess is
+              still logged, but no credit is produced.</div>
+          </details>
+          <details>
+            <summary>How secure is my account?</summary>
+            <div class="faq-a">Sign-up requires a real name, email, phone and selfie verification; 2FA is requested
+              again for every sensitive action (trades, transfers, security settings). Sessions are listed with device
+              and location info, and you can close a suspicious session with one tap.</div>
+          </details>
+          <details>
+            <summary>What are Bike Fest and the contests?</summary>
+            <div class="faq-a">Bike Fest is a meetup held twice a year (May and September); it grants a participation
+              badge and bonus BTCYC. Contests refresh every month: medals go to the top three in the most distance,
+              most QR and social leaderboards, and the leader earns a crown badge.</div>
+          </details>
+          <details>
+            <summary>Is there a registration fee?</summary>
+            <div class="faq-a">You need to pay a one-time €1 fee for access (no real payment is taken in the demo).
+              Once you're registered, 1 BTCYC is loaded as a gift; after that all your earnings come from riding.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLOSING CTA -->
+    <section class="cta-band" aria-label="Get started">
+      <span class="cta-coin c1" aria-hidden="true">₿</span>
+      <span class="cta-coin c2" aria-hidden="true">₿</span>
+      <span class="cta-coin c3" aria-hidden="true">₿</span>
+      <div class="wrap cta-in reveal">
+        <span class="cta-kicker">Ride. Earn. Repeat.</span>
+        <h2>The city is waiting to reward you</h2>
+        <p>Sign-up takes five minutes, and the first 1 BTCYC is on us. The rest is up to your pedals.</p>
+        <div class="cta-btns">
+          <a class="btn btn-light btn-lg" href="app.html"><span data-ico="bike"></span> Sign up free</a>
+          <a class="btn btn-glass btn-lg" href="#login"><span data-ico="lock"></span> Log in to the panel</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section class="band" id="login">
+      <div class="wrap login-wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="lock"></span> User panel</span>
+          <h2>Log in — every detail about you, in one place</h2>
+          <p>Open your panel with your registered email and your 2FA code: balance, earnings ledger, rides, quests,
+            badges and your security status, all on one screen.</p>
+        </div>
+
+        <div class="card login-card reveal">
+          <h3>Panel login</h3>
+          <p class="lead">Use the same details as your in-app account. The panel is read-only; your data is read from
+            the key stored on your device.</p>
+
+          <label class="field"><span>Your email address</span>
+            <input type="email" id="liEmail" placeholder="name@example.com" autocomplete="email" spellcheck="false" />
+          </label>
+
+          <label class="field"><span>2FA verification code</span>
+            <div class="otp-row" id="liOtp">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 1" />
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 2" />
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 3" />
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 4" />
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 5" />
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="Code digit 6" />
+            </div>
+            <small class="otp-demo">Demo verification code: <b>240519</b></small>
+          </label>
+
+          <div class="form-msg" id="liMsg" role="alert"></div>
+
+          <button class="btn btn-primary btn-lg" id="liBtn"><span data-ico="lock"></span> Log in to the panel</button>
+
+          <div class="login-alt">
+            <div class="login-sep">or</div>
+            <button class="link-btn" id="demoBtn">No account yet? Explore the panel with demo data</button>
+            <a href="app.html">Not registered yet? Sign up in the app →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- slogan strip -->
+  <div class="mq" aria-hidden="true">
+    <div class="mq-track">
+      <span class="mq-seq"><span>Pedal. Earn.</span><i></i><span class="alt">Ride. Earn. Repeat.</span><i></i><span>Every kilometer counts.</span><i></i><span class="alt">20 km = 1 BTCYC</span><i></i></span>
+      <span class="mq-seq"><span>Pedal. Earn.</span><i></i><span class="alt">Ride. Earn. Repeat.</span><i></i><span>Every kilometer counts.</span><i></i><span class="alt">20 km = 1 BTCYC</span><i></i></span>
     </div>
   </div>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-in">
+        <div>
+          <a class="brand" href="#top"><span class="brand-mark" data-ico="bike"></span> Bitcycling</a>
+          <p style="margin-top:12px">A social reward platform that encourages cycling for health and fitness.
+            Pedal, earn BTCYC, turn it into real products.</p>
+        </div>
+        <div class="foot-links">
+          <a href="#how">How it works</a>
+          <a href="#earn">Earnings calculator</a>
+          <a href="#features">Features</a>
+          <a href="#faq">FAQ</a>
+          <a href="#login">User panel</a>
+          <a href="app.html">Open the app</a>
+        </div>
+      </div>
+      <div class="foot-note">© 2026 Bitcycling · This page is a showcase and a read-only user panel.
+        All data is kept in your browser's local storage; nothing is sent to a server.</div>
+    </div>
+  </footer>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=1"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" onerror="window.__jsqrFailed=1"></script>
-<script src="app.js"></script>
+<!-- ================= USER PANEL ================= -->
+<div id="panel" hidden>
+  <header class="pnav">
+    <div class="wrap pnav-in">
+      <a class="brand" href="#"><span class="brand-mark" data-ico="bike"></span> Bitcycling <b style="color:var(--muted);font-weight:700">· Panel</b></a>
+      <div class="pnav-user">
+        <span class="avatar" id="pAvatar">AM</span>
+        <span><b id="pName">—</b><small id="pLvl">—</small></span>
+      </div>
+      <div class="pnav-acts">
+        <a class="btn btn-soft" href="app.html"><span data-ico="bike"></span> Open the app</a>
+        <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="pmain">
+    <div class="wrap">
+      <div class="p-head">
+        <div>
+          <h1 id="pHello">Hello</h1>
+          <p id="pSub">Your account summary is below; every field matches your in-app data live.</p>
+        </div>
+        <span class="wallet-pill"><span data-ico="wallet"></span><span id="pWallet">—</span> <small id="pWalletEur"></small></span>
+      </div>
+
+      <div class="kpi-grid" id="kpis"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="crown"></span> Level &amp; XP</h3><span class="tag" id="lvlTag">—</span></div>
+          <div class="level-top">
+            <span class="level-orb" id="lvlOrb">1</span>
+            <span class="level-info"><b id="lvlName">—</b><small id="lvlMeta">—</small></span>
+            <span class="level-xp" id="lvlXp">0 XP</span>
+          </div>
+          <div class="bar"><i id="lvlBar" style="width:0%"></i></div>
+          <div class="level-note"><span id="lvlNote1">—</span><span id="lvlNote2">—</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="route"></span> Daily goal</h3><span class="tag gold" id="dayTag">100 km limit</span></div>
+          <div class="level-top">
+            <span class="level-orb" id="dayOrb">0</span>
+            <span class="level-info"><b id="dayTxt">0 km / 100 km</b><small id="daySub">Remaining credit: 100 km = 5 BTCYC</small></span>
+            <span class="level-xp" id="dayEarn">0 BTCYC</span>
+          </div>
+          <div class="bar gold"><i id="dayBar" style="width:0%"></i></div>
+          <div class="level-note"><span id="dayNote1">Today's earnings</span><span id="dayNote2">—</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="chart"></span> Last 7 days distance</h3><span class="tag" id="chartWeekTotal">0 km</span></div>
+          <div class="chart" id="chartWeek"></div>
+          <div class="chart-legend"><span id="chartWeekFrom">—</span><span>today</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="coin"></span> 30-day earnings</h3><span class="tag gold" id="chartEarnTotal">0 BTCYC</span></div>
+          <div class="chart" id="chartEarn"></div>
+          <div class="chart-legend"><span id="chartEarnAxis">—</span><span>today</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="notebook"></span> Recent activity</h3><span class="tag" id="ledgerCount">0 records</span></div>
+          <div class="list" id="pLedger"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="bike"></span> My rides</h3><span class="tag" id="rideCount">0 rides</span></div>
+          <div class="list" id="pRides"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="target"></span> Quests</h3><span class="tag" id="questCount">—</span></div>
+          <div class="list" id="pQuests"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="medal"></span> Badges</h3><span class="tag gold" id="badgeCount">—</span></div>
+          <div class="badge-grid" id="pBadges"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="bag"></span> My orders</h3><span class="tag" id="orderCount">0</span></div>
+          <div class="list" id="pOrders"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="bell"></span> Notifications</h3><span class="tag" id="notifCount">0</span></div>
+          <div class="list" id="pNotifs"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="smile"></span> Profile &amp; membership</h3></div>
+          <div class="prof-sub">
+            <span class="avatar" id="profAvatar">AM</span>
+            <span><b id="profName">—</b><small id="profMeta">—</small></span>
+          </div>
+          <div class="prof-grid" id="pProfGrid"></div>
+          <div class="prof-tags" id="pProfTags"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3><span data-ico="shield"></span> Security &amp; devices</h3><span class="tag" id="secTag">—</span></div>
+          <div class="list" id="pSessions"></div>
+          <div class="card-head" style="margin-top:18px"><h3 style="font-size:.94rem"><span data-ico="ban"></span> Speed-limit record</h3></div>
+          <div class="list" id="pViol"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="pfoot">
+    <div class="wrap">This panel is a read-only summary; data is stored in your browser under the <code>bitcycling.v1</code>
+      key. New rides, trades and transfers are made from the app.</div>
+  </footer>
+</div>
+
+<script src="web.js"></script>
 </body>
 </html>

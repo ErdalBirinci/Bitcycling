@@ -2,7 +2,7 @@
   "name": "Bitcycling — Ride & Earn",
   "short_name": "Bitcycling",
   "description": "Ride your bike, earn BTCYC, redeem it for real products.",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
