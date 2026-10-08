@@ -1,6 +1,6 @@
 /* Bitcycling — minimal service worker for the offline shell
    strategy: always network first (fresh content), fall back to cache when offline */
-const CACHE = 'bitcycling-demo-v6';
+const CACHE = 'bitcycling-v5';
 const ASSETS = ['./', './app.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {
