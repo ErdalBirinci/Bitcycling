@@ -217,7 +217,6 @@ b,strong{font-weight:700}
 .fest-ico{color:#6EE7B7}
 .streak-flame{color:var(--gold)}
 .promo-ico{color:var(--gold-deep)}
-.post-act{display:inline-flex;align-items:center;gap:5px}
 .empty-ill span{display:grid;place-items:center}
 .p-img .ico{width:2.5rem;height:2.5rem;color:var(--primary-600)}
 .detail-hero .ico{width:62px;height:62px;color:var(--primary-600)}
@@ -431,21 +430,6 @@ b,strong{font-weight:700}
 .list-amt.plus{color:var(--primary-600)}
 .list-amt.minus{color:var(--danger)}
 .empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:.85rem}
-
-.feed{display:flex;flex-direction:column;gap:10px}
-.post{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:var(--shadow-s)}
-.post-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.post-ava{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.85rem;color:#fff}
-.post-head b{font-size:.88rem;display:block}
-.post-head small{color:var(--muted);font-size:.72rem}
-.post p{font-size:.87rem;line-height:1.6;color:var(--text-soft)}
-.post-stats{display:flex;gap:16px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem;font-weight:700}
-.post-stats span:first-child{color:var(--primary-600)}
-.post-act{font:inherit;font-size:.78rem;font-weight:800;color:var(--muted);padding:2px 4px;border-radius:8px;transition:.15s}
-.post-act:active{transform:scale(.94)}
-.post-act.on{color:var(--primary-600)}
-.post-act:first-child{color:var(--pink)}
-.post-act.on:first-child{color:var(--danger)}
 
 /* ---------- RIDE ---------- */
 .ride-map{position:relative;z-index:0;height:222px;border-radius:var(--r-lg);overflow:hidden;

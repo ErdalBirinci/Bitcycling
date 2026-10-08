@@ -172,7 +172,7 @@ const defaults = () => ({
   transferredToday: 0, lastTransferDay: dayKey(),
   inviteCode: null, sessions: null,
   /* quests & levels */
-  questsDone: {}, todaySocial: 0
+  questsDone: {}
 });
 
 let S = load();
@@ -219,7 +219,6 @@ function load() {
     if (st.lastDay !== dayKey()) {          // reset the daily counters
       st.lastDay = dayKey();
       st.todayKm = 0; st.todayEligibleKm = 0; st.creditedToday = 0; st.todayEarn = 0; st.todayQr = 0;
-      st.todaySocial = 0;
       st.violations = []; st.strikesWarned = false;
     }
     if (st.lastTransferDay !== dayKey()) { st.lastTransferDay = dayKey(); st.transferredToday = 0; }
@@ -261,12 +260,6 @@ const BOARD = [
   { n: 'Kevin Grant', km: 96.7, c: '#16A34A' },
   { n: 'Dana Cruz', km: 78.4, c: '#4F46E5' },
   { n: 'Eva Polat', km: 64.1, c: '#BE185D' }
-];
-
-const FEED = [
-  { n: 'Ella Kara', h: '2 hours ago', c: '#059669', t: 'Rode 24 km on the Downtown–Harbor line today. 1 BTCYC hit my account — my goal is to fill today’s 100 km limit! 🚴‍♀️', l: 42, cm: 8 },
-  { n: 'Max Reed', h: '5 hours ago', c: '#2563EB', t: 'Bike Fest registration done ✅ 42 km on the Riverside route, prize pool 15 BTCYC. Everyone riding the route, see you there.', l: 76, cm: 21 },
-  { n: 'Sara Demir', h: 'yesterday', c: '#DB2777', t: 'Scanned the QR board at the Waterfront, got a 3 BTCYC bonus and traded for my helmet in the market. The system really works. ⛑️', l: 118, cm: 34 }
 ];
 
 /* ---------- toast ---------- */
@@ -363,7 +356,6 @@ const questClaimed = q => !!(S.questsDone || {})[questKey(q)];
 const QUESTS = [
   { id: 'd_km',   ico: 'bike',   t: 'Pedal 10 km',  sub: 'Daily quest',  type: 'daily',  target: 10,  unit: 'km',     reward: 0.5, prog: () => S.todayKm },
   { id: 'd_qr',   ico: 'qr',     t: 'Scan 1 QR code',     sub: 'Daily quest',  type: 'daily',  target: 1,   unit: 'code',    reward: 0.3, prog: () => S.todayQr },
-  { id: 'd_soc',  ico: 'chat',   t: 'Interact in the feed', sub: 'Daily quest', type: 'daily',  target: 1,   unit: 'interaction', reward: 0.2, prog: () => S.todaySocial || 0 },
   { id: 'w_km',   ico: 'route',  t: 'Ride 50 km',           sub: 'Weekly quest', type: 'weekly', target: 50,  unit: 'km',     reward: 2,   prog: () => last7().total },
   { id: 'w_ride', ico: 'flag',   t: 'Complete 3 rides',     sub: 'Weekly quest', type: 'weekly', target: 3,   unit: 'rides',  reward: 1.5, prog: () => S.rides.filter(r => Date.now() - r.ts < 7 * 864e5).length }
 ];
@@ -632,8 +624,8 @@ function seedDemo() {
   S.walletId = 'BCYC-4F18-2A77';
   S.inviteCode = 'ALEX7';
   S.todayKm = 12.4; S.todayEligibleKm = 12.4; S.creditedToday = 0;
-  S.todayEarn = 3; S.todayQr = 1; S.todaySocial = 1;
-  S.questsDone = { ['d_soc|' + dayKey()]: Date.now() - 4 * 36e5 };
+  S.todayEarn = 3; S.todayQr = 1;
+  S.questsDone = { ['d_qr|' + dayKey()]: Date.now() - 4 * 36e5 };
   S.totalKm = 62.4; S.totalMinutes = 1420; S.qrCount = 6;
   S.streak = 3;
   S.rideDays = [dayKey(new Date(now - 2 * D)), dayKey(new Date(now - D)), dayKey()];
@@ -661,12 +653,6 @@ function seedDemo() {
   S.violations = [];
   S.sessions = defaultSessions();
   S.friends = ['@ellak'];
-  S.likes = { 0: true };
-  S.comments = {
-    0: [{ n: 'Max Reed', t: 'Amazing — 100 km goal complete 💪', ts: now - 54e5 }],
-    1: [{ n: 'Sara Demir', t: 'I’m joining the Riverside route too!', ts: now - 3 * H }],
-    2: [{ n: 'Zoe Arda', t: 'Is the Waterfront QR code still valid?', ts: now - 20 * H }]
-  };
   S.notifs = [
     { id: 1, ts: now - 18e5, text: '+1.50 BTCYC · Incoming transfer · Max Reed', icon: 'arrowDownLeft', read: false },
     { id: 2, ts: now - 3 * H, text: 'Ride credit · 20 km posted to your account', icon: 'bike', read: true },
@@ -1259,24 +1245,6 @@ function renderHome() {
     </div>`).join('');
   $('#notifDot').style.display = idx <= 10 && (S.notifs || []).some(n => !n.read) ? '' : 'none';
 
-  $('#homeFeed').innerHTML = FEED.map((p, i) => {
-    const liked = !!(S.likes || {})[i];
-    const cm = ((S.comments || {})[i] || []).length + p.cm;
-    const likes = p.l + (S.shared ? 12 : 0) + (liked ? 1 : 0);
-    return `
-    <article class="post">
-      <div class="post-head">
-        <span class="post-ava" style="background:${p.c}">${p.n.split(' ').map(x => x[0]).join('')}</span>
-        <div><b>${p.n}</b><small>${p.h}</small></div>
-      </div>
-      <p>${p.t}</p>
-      <div class="post-stats">
-        <button class="post-act ${liked ? 'on' : ''}" data-like="${i}">${ico('heart')} ${likes}</button>
-        <button class="post-act" data-comments="${i}">${ico('chat')} ${cm}</button>
-        <button class="post-act" data-share-post="${i}">${ico('share')} share</button>
-      </div>
-    </article>`;
-  }).join('');
 }
 
 function ledgerRow(l) {
@@ -1596,56 +1564,7 @@ function sendTransfer() {
   toast(`${nf(amt)} BTCYC sent.`, 'good');
 }
 
-/* ---------- social feed ---------- */
-function openComments(i) {
-  const p = FEED[i];
-  const list = (S.comments || {})[i] || [];
-  openModal(`
-    <h3>Comments</h3>
-    <p class="lead">${p.n} · ${list.length + p.cm} comments</p>
-    <div class="list-card" style="max-height:250px;overflow-y:auto;margin-bottom:14px">
-      ${list.length ? list.map(c => `
-        <div class="notif-row">
-          <span class="contact-ava" style="background:${c.me ? '#059669' : '#2563EB'}">${(c.n || '?').split(' ').map(x => x[0]).join('').slice(0, 2)}</span>
-          <div class="list-body"><b>${c.n}${c.me ? ' (you)' : ''}</b><small>${c.t}</small>
-            <small>${ago(c.ts)}</small></div>
-        </div>`).join('')
-      : emptyIll('chat', 'Write the first comment', 'Share your thoughts with the community.')}
-    </div>
-    <label class="field"><span>Your comment</span><input id="cmInput" maxlength="140" placeholder="What do you think?" /></label>
-    <button class="btn btn-primary btn-lg" id="cmSend" style="width:100%">Post</button>`);
-  $('#cmSend').onclick = () => {
-    const v = $('#cmInput').value.trim();
-    if (!v) return toast('Comment cannot be empty.', 'bad');
-    S.comments = S.comments || {};
-    (S.comments[i] = S.comments[i] || []).unshift({ n: (S.user && S.user.name) || 'You', t: v, ts: Date.now(), me: true });
-    S.todaySocial = (S.todaySocial || 0) + 1;                   // daily quest: interaction
-    save(); openComments(i); renderHome();
-    toast('Comment posted', 'good');
-  };
-  setTimeout(() => { const el = $('#cmInput'); if (el) el.focus(); }, 80);
-}
-
 document.addEventListener('click', e => {
-  const like = e.target.closest('[data-like]');
-  if (like) {
-    S.likes = S.likes || {};
-    const i = like.dataset.like;
-    S.likes[i] = !S.likes[i];
-    if (S.likes[i]) S.todaySocial = (S.todaySocial || 0) + 1;   // daily quest: interaction
-    save(); renderHome();
-    return;
-  }
-  const cm = e.target.closest('[data-comments]');
-  if (cm) { openComments(cm.dataset.comments); return; }
-
-  const sh = e.target.closest('[data-share-post]');
-  if (sh) {
-    const data = { title: 'Bitcycling', text: '#Bitcycling — ride and earn BTCYC! 🚴' };
-    if (navigator.share) navigator.share(data).catch(() => {});
-    toast('Share ready: #Bitcycling', 'good');
-    return;
-  }
   const fr = e.target.closest('[data-friend]');
   if (fr) {
     S.friends = S.friends || [];
