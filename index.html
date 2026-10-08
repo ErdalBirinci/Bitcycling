@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#059669" />
+<meta name="description" content="Bitcycling — pedal to earn BTCYC and redeem them for real products." />
+<title>Bitcycling — Ride to Earn</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone" id="phone">
+
+    <!-- ============ AUTH / ONBOARDING ============ -->
+    <section class="auth" id="authScreen">
+      <div class="auth-glow"></div>
+
+      <!-- Step: Welcome -->
+      <div class="auth-pane is-active" data-pane="welcome">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="13" cy="32" r="9" stroke="currentColor" stroke-width="3"/><circle cx="35" cy="32" r="9" stroke="currentColor" stroke-width="3"/><path d="M13 32l8-16h9l5 16M21 16l10 16M24 12h7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h1 class="brand-title">Bitcycling</h1>
+          <p class="brand-tag">Ride, earn <strong>BTCYC</strong>, redeem them for real products.</p>
+        </div>
+
+        <div class="feature-strip">
+          <div class="feature"><span class="feature-ico" data-ico="bike"></span><div><b>20 km = 1 BTCYC</b><small>Automatic GPS tracking</small></div></div>
+          <div class="feature"><span class="feature-ico" data-ico="bag"></span><div><b>Real products</b><small>Trade and pay in the market</small></div></div>
+          <div class="feature"><span class="feature-ico" data-ico="ticket"></span><div><b>QR &amp; Bike Fest</b><small>Extra bonus earnings</small></div></div>
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary btn-lg" data-auth-go="signup">Create account</button>
+          <button class="btn btn-ghost btn-lg" data-auth-go="login">I already have an account</button>
+          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
+        </div>
+      </div>
+
+      <!-- Step: Sign up -->
+      <div class="auth-pane" data-pane="signup">
+        <button class="icon-btn auth-back" data-auth-back aria-label="Back">←</button>
+        <div class="auth-head">
+          <span class="step-pill">Sign up · 4 steps</span>
+          <h2>Join with your real details</h2>
+          <p>BTCYC balances are tied to a real identity. Fake details, multiple accounts and limit abuse lead to a permanent ban.</p>
+        </div>
+
+        <ol class="stepper" id="signupStepper">
+          <li class="is-on"><span>1</span>Details</li>
+          <li><span>2</span>Selfie</li>
+          <li><span>3</span>2FA</li>
+          <li><span>4</span>Access</li>
+        </ol>
+
+        <!-- 1: details -->
+        <div class="signup-step is-active" data-step="1">
+          <label class="field"><span>First name</span><input type="text" id="suName" placeholder="e.g. Alex" autocomplete="given-name" /></label>
+          <label class="field"><span>Last name</span><input type="text" id="suSurname" placeholder="e.g. Morgan" autocomplete="family-name" /></label>
+          <label class="field"><span>Email</span><input type="email" id="suEmail" placeholder="name@example.com" autocomplete="email" /></label>
+          <label class="field"><span>Mobile phone</span><input type="tel" id="suPhone" placeholder="+1 555 xxx xxxx" autocomplete="tel" /></label>
+          <p class="field-hint">A valid email and phone number are required.</p>
+        </div>
+
+        <!-- 2: selfie -->
+        <div class="signup-step" data-step="2">
+          <div class="selfie-box" id="selfieBox">
+            <div class="selfie-preview" id="selfiePreview">
+              <span class="selfie-placeholder" data-ico="smile"></span>
+            </div>
+            <p class="selfie-note">Upload a selfie taken with your own phone. Your profile photo is matched with your BTCYC account.</p>
+            <div class="row gap">
+              <label class="btn btn-soft">Take with camera<input type="file" id="selfieCam" accept="image/*" capture="user" hidden /></label>
+              <label class="btn btn-soft">Choose from gallery<input type="file" id="selfieFile" accept="image/*" hidden /></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3: 2FA -->
+        <div class="signup-step" data-step="3">
+          <div class="panel panel-tint">
+            <b>Two-factor authentication</b>
+            <p>We sent a 6-digit code to your phone. <span class="mono">Demo code: 240519</span></p>
+            <div class="otp-row" id="otpRow">
+              <input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" />
+            </div>
+            <p class="field-hint" id="otpHint">2FA is required for sign-up and login.</p>
+          </div>
+        </div>
+
+        <!-- 4: access fee -->
+        <div class="signup-step" data-step="4">
+          <div class="price-card">
+            <span class="price-tag">App access</span>
+            <div class="price"><span class="cur">€</span>1</div>
+            <p>One-time download fee · no subscription</p>
+            <ul class="price-list">
+              <li>Unlimited GPS distance tracking</li>
+              <li>BTCYC earning and market trades</li>
+              <li>QR events &amp; Bike Fest entry</li>
+            </ul>
+            <div class="pay-methods">
+              <span class="pay-chip is-on"><i data-ico="card"></i> Card</span><span class="pay-chip"><i data-ico="phone"></i> Mobile payment</span><span class="pay-chip"><i data-ico="wallet"></i> PayPal</span>
+            </div>
+          </div>
+          <p class="field-hint">This demo takes no real payment; access is granted instantly.</p>
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary btn-lg" id="signupNext">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step: Login -->
+      <div class="auth-pane" data-pane="login">
+        <button class="icon-btn auth-back" data-auth-back aria-label="Back">←</button>
+        <div class="auth-head">
+          <span class="step-pill">Log in</span>
+          <h2>Welcome back</h2>
+          <p>Sign in with your email and password, then confirm your 2FA code.</p>
+        </div>
+        <label class="field"><span>Email</span><input type="email" id="liEmail" placeholder="name@example.com" /></label>
+        <label class="field"><span>Password</span><input type="password" id="liPass" placeholder="••••••••" value="bitcycling" /></label>
+        <div class="panel panel-tint">
+          <b>2FA verification</b>
+          <div class="otp-row" id="otpRow2">
+            <input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" /><input maxlength="1" inputmode="numeric" />
+          </div>
+          <p class="field-hint">Demo code: 240519</p>
+        </div>
+        <div class="auth-actions">
+          <button class="btn btn-primary btn-lg" id="loginBtn">Log in</button>
+          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ APP SHELL ============ -->
+    <section class="app" id="appScreen" hidden>
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="mini-logo" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="13" cy="32" r="9" stroke="currentColor" stroke-width="4"/><circle cx="35" cy="32" r="9" stroke="currentColor" stroke-width="4"/><path d="M13 32l8-16h9l5 16M21 16l10 16" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="topbar-title">
+            <b>Bitcycling</b>
+            <small id="topbarSub">Sustainable riding</small>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <button class="balance-chip" data-nav="wallet" aria-label="Balance">
+            <span class="coin">₿</span><b id="chipBalance">0.00</b><span class="unit">BTCYC</span>
+          </button>
+          <button class="icon-btn" id="themeBtn" aria-label="Toggle theme"><span id="themeIco"></span></button>
+          <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 21a2 2 0 01-3.4 0"/></svg>
+            <i class="dot" id="notifDot"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="views" id="views">
+
+        <!-- ---------- HOME ---------- -->
+        <section class="view is-active" data-view="home">
+          <div class="greet-row">
+            <div>
+              <p class="eyebrow" id="greetEyebrow">Good morning</p>
+              <h2 class="greet" id="greetName">Hello</h2>
+              <span class="streak-chip" id="streakChip"><i data-ico="flame"></i> <b id="streakNum">1</b>-day streak</span>
+            </div>
+            <button class="avatar" data-nav="profile" id="homeAvatar">B</button>
+          </div>
+
+          <div class="hero-card">
+            <div class="hero-glow"></div>
+            <div class="hero-top">
+              <div>
+                <span class="hero-label">YOUR BTCYC BALANCE</span>
+                <div class="hero-value"><span class="coin big">₿</span><b id="heroBalance">0.00</b></div>
+                <span class="hero-fiat" id="heroFiat">≈ 0.00 € in value</span>
+              </div>
+              <div class="ring" id="dailyRing">
+                <svg viewBox="0 0 96 96">
+                  <circle class="ring-bg" cx="48" cy="48" r="40" />
+                  <circle class="ring-fg" cx="48" cy="48" r="40" id="ringFg" />
+                </svg>
+                <div class="ring-text"><b id="ringKm">0</b><small>/ 100 km</small></div>
+              </div>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-light btn-lg" data-nav="ride">Start riding</button>
+              <button class="btn btn-glass" id="qrQuickBtn">Scan QR</button>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card"><span class="stat-ico green" data-ico="route"></span><b id="statTodayKm">0.0</b><small>today km</small></div>
+            <div class="stat-card"><span class="stat-ico gold" data-ico="coin"></span><b id="statTodayEarn">0</b><small>today BTCYC</small></div>
+            <div class="stat-card"><span class="stat-ico blue" data-ico="chart"></span><b id="statTotalKm">0</b><small>total km</small></div>
+            <div class="stat-card"><span class="stat-ico pink" data-ico="ticket"></span><b id="statQr">0</b><small>QR bonus</small></div>
+          </div>
+
+          <div class="section-head"><h3>Ways to earn</h3><span class="badge badge-green">ride / earn</span></div>
+          <div class="earn-scroll">
+            <article class="earn-card" data-nav="ride">
+              <span class="earn-ico" data-ico="bike"></span>
+              <b>Pedal to earn</b>
+              <p>Every 20 km = 1 BTCYC. Automatic credit within the 40 km/h limit via GPS.</p>
+              <span class="earn-link">Ride now →</span>
+            </article>
+            <article class="earn-card" data-nav="events">
+              <span class="earn-ico" data-ico="qr"></span>
+              <b>QR events</b>
+              <p>Scan city- and country-based QR codes to earn extra bonus BTCYC.</p>
+              <span class="earn-link">Scan a code →</span>
+            </article>
+            <article class="earn-card" data-nav="events">
+              <span class="earn-ico" data-ico="flag"></span>
+              <b>Bitcycling Bike Fest</b>
+              <p>Twice a year, race on designated routes; place in the standings and win prizes.</p>
+              <span class="earn-link">Events →</span>
+            </article>
+            <article class="earn-card" data-nav="events">
+              <span class="earn-ico" data-ico="trophy"></span>
+              <b>Competition prizes</b>
+              <p>Earn BTCYC in the longest-distance, most-QR and social media contests.</p>
+              <span class="earn-link">Leaderboards →</span>
+            </article>
+          </div>
+
+          <div class="section-head"><h3>Quests</h3><span class="badge badge-gold" id="questCount">0/5</span></div>
+          <div class="level-card" id="levelCard"></div>
+          <div class="quest-list" id="questList"></div>
+
+          <div class="section-head"><h3>Recent activity</h3><button class="btn btn-link" data-nav="wallet">All</button></div>
+          <div class="list-card" id="homeLedger"></div>
+
+          <div class="section-head"><h3>Community leaderboard</h3><button class="btn btn-link" data-nav="events">Details</button></div>
+          <div class="list-card" id="homeBoard"></div>
+
+          <div class="section-head"><h3>Social feed</h3></div>
+          <div class="feed" id="homeFeed"></div>
+        </section>
+
+        <!-- ---------- RIDE ---------- -->
+        <section class="view" data-view="ride">
+          <div class="ride-map" id="rideMap">
+            <div class="map-leaflet" id="lmap"></div>
+            <svg class="map-grid" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>
+                </linearGradient>
+              </defs>
+              <path class="route-bg" d="M20 200 C 80 120, 120 190, 170 130 S 260 40, 320 90 S 380 60, 386 40" />
+              <path class="route-fg" id="routeFg" d="M20 200 C 80 120, 120 190, 170 130 S 260 40, 320 90 S 380 60, 386 40" />
+            </svg>
+            <div class="map-badges">
+              <span class="pill pill-dark" id="gpsPill">● Simulation</span>
+              <span class="pill pill-dark" id="rideStatusPill">Ready</span>
+            </div>
+            <div class="map-rider" id="mapRider" data-ico="bike"></div>
+          </div>
+
+          <div class="ride-metrics">
+            <div class="metric metric-wide">
+              <small>Distance</small>
+              <b><span id="rideKm">0.00</span><i>km</i></b>
+            </div>
+            <div class="metric"><small>Time</small><b id="rideTime">00:00</b></div>
+            <div class="metric"><small>Eligible km</small><b><span id="rideEligible">0.00</span></b></div>
+            <div class="metric"><small>Avg speed</small><b><span id="rideAvg">0</span><i>km/h</i></b></div>
+          </div>
+
+          <div class="speed-card" id="speedCard">
+            <div class="gauge-head">
+              <small>Current speed</small>
+              <span class="speed-flag" id="speedFlag">Limit 40 km/h</span>
+            </div>
+            <div class="gauge" id="gaugeBox">
+              <svg id="gaugeSvg" viewBox="0 0 200 130" aria-label="Current speed gauge">
+                <path class="track" d="M20 95 A80 80 0 0 1 180 95"/>
+                <path class="zone-ok" d="M20 95 A80 80 0 0 1 134.1 22.6"/>
+                <path class="zone-warn" d="M134.1 22.6 A80 80 0 0 1 164.7 48"/>
+                <path class="zone-bad" d="M164.7 48 A80 80 0 0 1 180 95"/>
+                <g id="gaugeTicks"></g>
+                <line class="limit-mark" x1="156.6" y1="53.9" x2="172.8" y2="42.1"/>
+                <g id="gaugeLabels"></g>
+                <polygon id="gaugeNeedle" points="34,95 100,90 100,100"/>
+                <circle class="needle-hub" cx="100" cy="95" r="7"/>
+              </svg>
+              <div class="gauge-read"><b id="speedBig">0</b><span>km/h</span></div>
+            </div>
+            <p class="speed-note" id="speedNote">Rides above the limit earn no BTCYC; repeats suspend your account.</p>
+          </div>
+
+          <div class="limit-card">
+            <div class="limit-row"><b>Daily limit</b><span><b id="limitKm">0</b> / 100 km</span></div>
+            <div class="bar"><div class="bar-fill" id="limitFill"></div></div>
+            <div class="limit-row sub"><span>Earned today</span><span><b id="limitEarn">0</b> BTCYC</span></div>
+            <div class="limit-row sub"><span>Next credit</span><span id="nextCredit">20.00 km</span></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><b>Ride source</b></div>
+            <div class="seg" id="sourceSeg">
+              <button class="is-on" data-source="sim">Simulation</button>
+              <button data-source="gps">Real GPS</button>
+            </div>
+            <div class="seg seg-sub" id="speedSeg">
+              <button class="is-on" data-mult="1">1× real time</button>
+              <button data-mult="60">60×</button>
+              <button data-mult="600">600×</button>
+            </div>
+            <p class="field-hint" id="sourceHint">Simulation speeds up time; speed values are validated in real time against the 40 km/h limit.</p>
+          </div>
+
+          <div class="ride-controls">
+            <button class="btn btn-primary btn-xl" id="rideToggle">Start ride</button>
+            <button class="btn btn-soft btn-xl" id="rideFinish" disabled>Finish and claim earnings</button>
+          </div>
+
+          <div class="panel panel-tint">
+            <b>Rules</b>
+            <ul class="rule-list">
+              <li>Every 20 km = 1 BTCYC; a maximum of 100 km counts per day.</li>
+              <li>The portion above 40 km/h does not convert to BTCYC.</li>
+              <li>Continuously exceeding the speed limit permanently suspends the account.</li>
+              <li>Collecting balance through multiple accounts leads to a permanent ban.</li>
+            </ul>
+          </div>
+
+          <div class="section-head"><h3>Ride history</h3><span class="badge badge-green">route map</span></div>
+          <div class="list-card" id="rideHistory"></div>
+        </section>
+
+        <!-- ---------- MARKET ---------- -->
+        <section class="view" data-view="market">
+          <div class="search-row">
+            <label class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input type="search" id="marketSearch" placeholder="Search products, stores…" />
+            </label>
+            <button class="icon-btn" id="filterBtn" aria-label="Filter">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            </button>
+          </div>
+
+          <div class="chips" id="marketChips">
+            <button class="chip is-on" data-cat="all">All</button>
+            <button class="chip" data-cat="bike">Bikes</button>
+            <button class="chip" data-cat="apparel">Apparel</button>
+            <button class="chip" data-cat="accessories">Accessories</button>
+            <button class="chip" data-cat="nutrition">Nutrition</button>
+            <button class="chip" data-cat="technology">Technology</button>
+          </div>
+
+          <div class="promo" data-cat-jump="bike">
+            <div class="promo-text">
+              <span class="promo-tag">Store rental</span>
+              <b>Put your brand in the spotlight</b>
+              <p>Bike companies open virtual stores in the market section and sell their products to BTCYC holders for a monthly rent.</p>
+            </div>
+            <span class="promo-ico" data-ico="store"></span>
+          </div>
+
+          <div class="section-head"><h3 id="marketCount">Products</h3><span class="badge badge-gold">Trade with BTCYC</span></div>
+          <div class="product-grid" id="productGrid"></div>
+
+          <div class="section-head"><h3>My trades</h3></div>
+          <div class="list-card" id="orderList"></div>
+        </section>
+
+        <!-- ---------- EVENTS ---------- -->
+        <section class="view" data-view="events">
+          <div class="section-head"><h3>QR bonus events</h3><span class="badge badge-green">city &amp; country</span></div>
+          <div class="panel qr-panel">
+            <div class="qr-visual" id="qrVisual">
+              <i></i><i></i><i></i><i></i>
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <rect x="6" y="6" width="26" height="26" rx="6" class="qr-p"/><rect x="68" y="6" width="26" height="26" rx="6" class="qr-p"/><rect x="6" y="68" width="26" height="26" rx="6" class="qr-p"/>
+                <path class="qr-p" d="M42 8h8v8h-8zM56 8h8v16h-8zM42 24h8v8h-8zM68 42h26v8H68zM42 42h8v8h-8zM56 56h8v8h-8zM70 62h8v8h-8zM84 76h10v8H84zM42 76h8v8h-8zM56 76h8v16h-8zM42 90h8v4h-8zM68 88h8v6h-8z"/>
+              </svg>
+            </div>
+            <label class="field"><span>Event city</span>
+              <select id="qrCity">
+                <option value="Istanbul">Istanbul - Bosphorus route</option>
+                <option value="Ankara">Ankara — Youth Park</option>
+                <option value="Izmir">Izmir - Waterfront</option>
+                <option value="Berlin">Berlin — Tempelhofer Feld</option>
+                <option value="Amsterdam">Amsterdam — Vondelpark</option>
+              </select>
+            </label>
+            <div class="qr-actions">
+              <button class="btn btn-primary btn-lg" id="qrScanBtn">Scan QR code and claim the bonus</button>
+              <button class="btn btn-soft btn-lg" id="qrCamBtn"><i data-ico="camera"></i> Scan with camera</button>
+            </div>
+            <p class="field-hint">Each successful scan gives a bonus of 1–5 BTCYC. A maximum of 10 codes per day.</p>
+          </div>
+
+          <div class="section-head"><h3>Bitcycling Bike Fest</h3><span class="badge badge-gold">2× a year</span></div>
+          <article class="fest-card">
+            <div class="fest-top">
+              <div>
+                <span class="fest-tag">Spring Tour · May 18</span>
+                <b>Bitcycling Bike Fest ’26</b>
+                <p>A designated 42 km route around Riverside Lake · shuttle from Istanbul</p>
+              </div>
+              <span class="fest-ico" data-ico="flag"></span>
+            </div>
+            <div class="fest-stats">
+              <div><b>42</b><small>km route</small></div>
+              <div><b>15</b><small>BTCYC prize pool</small></div>
+              <div><b>820</b><small>registered riders</small></div>
+            </div>
+            <button class="btn btn-light btn-lg" id="festJoin">Register now</button>
+          </article>
+
+          <div class="section-head"><h3>Active contests</h3></div>
+          <div class="challenge-list">
+            <div class="challenge">
+              <span class="ch-ico" data-ico="route"></span>
+              <div class="ch-body"><b>Longest distance</b><p>5 BTCYC for the top 50 riders with the most km this month.</p>
+                <div class="bar"><div class="bar-fill" id="chDistBar"></div></div>
+                <small id="chDistNote">Your rank: 0</small>
+              </div>
+            </div>
+            <div class="challenge">
+              <span class="ch-ico" data-ico="qr"></span>
+              <div class="ch-body"><b>Most QR scans</b><p>3 BTCYC for the 30 users who scan the most codes.</p>
+                <div class="bar"><div class="bar-fill" id="chQrBar"></div></div>
+                <small id="chQrNote">Codes scanned: 0</small>
+              </div>
+            </div>
+            <div class="challenge">
+              <span class="ch-ico" data-ico="megaphone"></span>
+              <div class="ch-body"><b>Social media contest</b><p>Most engagement on a #Bitcycling post → 8 BTCYC.</p>
+                <button class="btn btn-soft btn-sm" id="shareBtn">Share now</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-head"><h3>Monthly leaderboard</h3></div>
+          <div class="list-card" id="eventsBoard"></div>
+        </section>
+
+        <!-- ---------- WALLET ---------- -->
+        <section class="view" data-view="wallet">
+          <div class="wallet-card">
+            <span class="wallet-label">Total balance</span>
+            <div class="wallet-value"><span class="coin big">₿</span><b id="walletBalance">0.00</b></div>
+            <div class="wallet-meta">
+              <div><small>Total earned</small><b id="walletEarned">0.00</b></div>
+              <div><small>Spent</small><b id="walletSpent">0.00</b></div>
+              <div><small>≈ Euro</small><b id="walletFiat">€0.00</b></div>
+            </div>
+          </div>
+
+          <div class="addr-card">
+            <div class="addr-head">
+              <span class="addr-label">My wallet address</span>
+              <button class="btn btn-link btn-sm" id="copyAddr">Copy</button>
+            </div>
+            <div class="addr-code" id="walletAddr">BCYC-••••-••••</div>
+            <p class="addr-note">Every Bitcycling user has a unique wallet. Share your address to receive BTCYC.</p>
+            <div class="addr-actions">
+              <button class="btn btn-primary" id="sendBtn">Send transfer</button>
+              <button class="btn btn-soft" id="receiveBtn">Get my address</button>
+            </div>
+          </div>
+
+          <div class="mini-cards">
+            <div class="mini-card"><span data-ico="bike"></span><div><b id="wRides">0</b><small>rides</small></div></div>
+            <div class="mini-card"><span data-ico="route"></span><div><b id="wKm">0</b><small>km</small></div></div>
+            <div class="mini-card"><span data-ico="qr"></span><div><b id="wQr">0</b><small>QR</small></div></div>
+          </div>
+
+          <div class="chips" id="ledgerChips">
+            <button class="chip is-on" data-lt="all">All</button>
+            <button class="chip" data-lt="earn">Earnings</button>
+            <button class="chip" data-lt="spend">Spending</button>
+            <button class="chip" data-lt="bonus">Bonus</button>
+            <button class="chip" data-lt="transfer">Transfer</button>
+          </div>
+
+          <div class="list-card" id="walletLedger"></div>
+          <p class="foot-note">BTCYC aims to gain commodity value over the long term; cash transactions will be possible once it is listed on crypto exchanges.</p>
+        </section>
+
+        <!-- ---------- PROFILE ---------- -->
+        <section class="view" data-view="profile">
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">B</div>
+            <div class="profile-info">
+              <b id="profileName">Bitcycling User</b>
+              <span id="profileEmail">—</span>
+              <span id="profilePhone">—</span>
+            </div>
+            <div class="verify-row">
+              <span class="pill pill-green" id="pillVerified">✓ Identity verified</span>
+              <span class="pill pill-blue" id="pill2fa">2FA on</span>
+              <span class="pill pill-gold" id="levelPill">★ Lv.—</span>
+            </div>
+          </div>
+
+          <div class="section-head"><h3>Account security</h3></div>
+          <div class="list-card">
+            <div class="row-item">
+              <div><b>Two-factor authentication</b><small>SMS + app code</small></div>
+              <label class="switch"><input type="checkbox" id="toggle2fa" checked /><i></i></label>
+            </div>
+            <div class="row-item">
+              <div><b>Speed violation history</b><small id="violationText">No violations — clean</small></div>
+              <span class="pill pill-green" id="violationPill">Clean</span>
+            </div>
+            <div class="row-item">
+              <div><b>Multi-account check</b><small>Monitored via device and location signature</small></div>
+              <span class="pill pill-green">Single account</span>
+            </div>
+            <div class="row-item">
+              <div><b>Profile selfie</b><small>Upload a new selfie</small></div>
+              <label class="btn btn-soft btn-sm">Upload<input type="file" id="profileSelfie" accept="image/*" hidden /></label>
+            </div>
+          </div>
+
+          <div class="section-head"><h3>Devices and sessions</h3></div>
+          <div class="list-card" id="sessionList"></div>
+
+          <div class="section-head"><h3>Statistics</h3></div>
+          <div class="stat-grid">
+            <div class="stat-card"><span class="stat-ico green" data-ico="route"></span><b id="pTotalKm">0</b><small>total km</small></div>
+            <div class="stat-card"><span class="stat-ico gold" data-ico="coin"></span><b id="pTotalEarn">0</b><small>total BTCYC</small></div>
+            <div class="stat-card"><span class="stat-ico blue" data-ico="timer"></span><b id="pTotalTime">0h</b><small>pedaling time</small></div>
+            <div class="stat-card"><span class="stat-ico pink" data-ico="medal"></span><b id="pRank">—</b><small>rank</small></div>
+          </div>
+
+          <div class="section-head"><h3>Charts</h3><span class="badge badge-green">last 7 / 30 days</span></div>
+          <div class="chart-card">
+            <div class="chart-head"><b>Last 7 days · distance</b><span id="chartWeekTotal">0 km</span></div>
+            <div class="bars" id="chartWeek"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-head"><b>Last 30 days · BTCYC earned</b><span id="chartEarnTotal">0 BTCYC</span></div>
+            <svg class="spark" id="chartEarn" viewBox="0 0 300 110" preserveAspectRatio="none" aria-label="Earnings chart"></svg>
+            <div class="chart-axis" id="chartEarnAxis"></div>
+          </div>
+
+          <div class="section-head"><h3>Badges</h3><span class="badge badge-gold" id="badgeCount">0 / 11</span></div>
+          <div class="badge-grid" id="badgeGrid"></div>
+
+          <div class="section-head"><h3>Streak and goal</h3></div>
+          <div class="streak-card" id="streakCard"></div>
+
+          <div class="section-head"><h3>Friends and invites</h3></div>
+          <div class="panel">
+            <div class="invite-row">
+              <div><small>Your invite code</small><b class="mono" id="inviteCode">—</b></div>
+              <button class="btn btn-soft btn-sm" id="copyInvite">Copy</button>
+            </div>
+            <p class="field-hint">When a friend enters your code you both get <b>+2 BTCYC</b>. You earn <b>+2 BTCYC</b> for each friend who joins with your invite code.</p>
+            <label class="field"><span>Your friend's invite code</span><input id="friendCode" placeholder="e.g. PEDAL5" autocomplete="off" /></label>
+            <button class="btn btn-primary" id="applyFriendCode" style="width:100%">Redeem code and claim the bonus</button>
+          </div>
+          <div class="list-card" id="friendList" style="margin-top:10px"></div>
+
+          <div class="section-head"><h3>Access and payments</h3></div>
+          <div class="list-card">
+            <div class="row-item">
+              <div><b>App access fee</b><small>One-time · Mar 1, 2026</small></div>
+              <span class="pill pill-green">€1 paid</span>
+            </div>
+            <div class="row-item">
+              <div><b>Data partnerships</b><small>Sharing of engagement user data (6 months)</small></div>
+              <label class="switch"><input type="checkbox" id="toggleData" /><i></i></label>
+            </div>
+          </div>
+
+          <div class="section-head"><h3>Settings</h3></div>
+          <div class="list-card">
+            <div class="row-item"><div><b>Earning notifications</b><small>Alert me when BTCYC is credited</small></div>
+              <label class="switch"><input type="checkbox" id="toggleNotify" checked /><i></i></label></div>
+            <div class="row-item"><div><b>Bike speed limit</b><small>Maximum speed for BTCYC</small></div><span class="mono muted">40 km/h</span></div>
+            <div class="row-item"><div><b>Language</b><small>Interface language</small></div><span class="mono muted">EN</span></div>
+            <div class="row-item"><div><b>Theme</b><small>Light / dark appearance</small></div>
+              <div class="seg seg-mini" id="themeSeg">
+                <button data-theme-set="light">Light</button>
+                <button data-theme-set="dark">Dark</button>
+              </div>
+            </div>
+            <div class="row-item"><div><b>Daily transfer limit</b><small>Sent today</small></div><span class="mono muted" id="transferLeft">100 / 100</span></div>
+            <div class="row-item"><div><b>Wallet transfers</b><small>All transfers protected by 2FA</small></div><span class="pill pill-green">Secure</span></div>
+            <button class="row-item row-btn" id="resetBtn"><div><b class="danger">Reset demo data</b><small>Deletes all progress</small></div><span>↺</span></button>
+            <button class="row-item row-btn" id="logoutBtn"><div><b>Log out</b><small>Sign out</small></div><span>→</span></button>
+          </div>
+        </section>
+      </main>
+
+      <!-- ---------- BOTTOM NAV ---------- -->
+      <nav class="tabbar" id="tabbar">
+        <button class="tab is-on" data-nav="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1z"/></svg><span>Home</span>
+        </button>
+        <button class="tab" data-nav="ride">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17l5-9h4l4 9M10 8l6.5 9M14 5h4"/></svg><span>Ride</span>
+        </button>
+        <button class="tab" data-nav="market">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 7h16l-1.2 12.1a1 1 0 01-1 .9H6.2a1 1 0 01-1-.9z"/><path d="M9 7a3 3 0 016 0"/></svg><span>Market</span>
+        </button>
+        <button class="tab" data-nav="events">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18" stroke-linecap="round"/></svg><span>Events</span>
+        </button>
+        <button class="tab" data-nav="profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0115 0"/></svg><span>Profile</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- ============ MODALS ============ -->
+    <div class="modal-root" id="modalRoot" hidden>
+      <div class="modal-back" data-modal-close></div>
+      <div class="modal" id="modalBox" role="dialog" aria-modal="true">
+        <button class="icon-btn modal-x" data-modal-close aria-label="Close">✕</button>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+
+    <div class="toast-root" id="toastRoot" aria-live="polite"></div>
+
+    <!-- ============ ACCOUNT SUSPENDED ============ -->
+    <div class="suspend-root" id="suspendRoot" hidden>
+      <div class="suspend-card">
+        <span class="suspend-ico" data-ico="ban"></span>
+        <h2>Account suspended</h2>
+        <p id="suspendReason">Your account has been permanently suspended for repeatedly violating the 40 km/h speed limit.</p>
+        <div class="list-card" id="suspendList"></div>
+        <div class="suspend-actions">
+          <button class="btn btn-primary btn-lg" id="appealBtn">Appeal</button>
+          <button class="btn btn-soft btn-lg" id="suspendDemo">Demo: reopen account</button>
+        </div>
+        <p class="field-hint">Appeals are reviewed within 48 hours. Verified accounts are reopened.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" onerror="window.__jsqrFailed=1"></script>
+<script src="app.js"></script>
+</body>
+</html>

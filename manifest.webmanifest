@@ -1,0 +1,18 @@
+{
+  "name": "Bitcycling — Ride & Earn",
+  "short_name": "Bitcycling",
+  "description": "Ride your bike, earn BTCYC, redeem it for real products.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F6F4",
+  "theme_color": "#059669",
+  "lang": "en",
+  "categories": ["health", "sports", "shopping", "lifestyle"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icon.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
