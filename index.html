@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://apis.google.com https://accounts.google.com; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self'; object-src 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#059669" />
 <meta name="description" content="Bitcycling — pedal, earn BTCYC, turn it into real products. Get to know the app and view your earnings panel after logging in." />
@@ -9,7 +10,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="web.css" />
 </head>
 <body>
@@ -40,7 +41,7 @@
     <section class="hero" id="top">
       <div class="wrap hero-in">
         <div class="hero-copy">
-          <span class="eyebrow"><span data-ico="route"></span> Social cycling · reward platform</span>
+          <span class="eyebrow"><span data-ico="route"></span> Every 20 km pays 1 BTCYC</span>
           <h1>Pedal to earn <em>BTCYC</em>,<br>redeem it for real products.</h1>
           <p class="hero-sub">Bitcycling is the mobile app that turns every kilometer into a reward. GPS-measured
             <b>20&nbsp;km = 1&nbsp;BTCYC</b>; convert your savings into real products in the market — from helmets
@@ -149,13 +150,13 @@
                     <span data-ico="bike"></span>
                     <b>Pedal to earn</b>
                     <p>Every 20 km = 1 BTCYC. Automatic credit by GPS within the 40 km/h limit.</p>
-                    <i>Start riding →</i>
+                    <i>Start riding</i>
                   </article>
                   <article>
                     <span data-ico="qr"></span>
                     <b>QR events</b>
                     <p>Scan city- and country-based QR codes to earn extra bonus BTCYC.</p>
-                    <i>Scan a code →</i>
+                    <i>Scan a code</i>
                   </article>
                 </div>
 
@@ -293,7 +294,7 @@
           <div class="feat reveal"><span class="feat-ico" data-ico="qr"></span><b>QR city bonus</b><p>Scan the event boards around the city; real QR scanning with the camera or a one-tap simulation.</p></div>
           <div class="feat reveal"><span class="feat-ico" data-ico="flag"></span><b>Bike Fest</b><p>Twice a year, meetups on the Riverside and city routes. Participation badge and volunteer bonuses.</p></div>
           <div class="feat reveal"><span class="feat-ico" data-ico="trophy"></span><b>Contests</b><p>Monthly distance and QR rankings; medals for the top three, a crown for the leader. Rewards refresh every month.</p></div>
-          <div class="feat reveal"><span class="feat-ico" data-ico="target"></span><b>Quest · Badge · Level</b><p>Daily and weekly quests, 11 badges, 8 levels. Every completed quest pays XP and BTCYC.</p></div>
+          <div class="feat reveal"><span class="feat-ico" data-ico="target"></span><b>Quests &amp; badges</b><p>Daily and weekly quests, 11 badges, 8 levels. Every completed quest pays XP and BTCYC.</p></div>
           <div class="feat reveal"><span class="feat-ico" data-ico="store"></span><b>Market &amp; rental shop</b><p>Helmets, jackets, light sets, GPS, e-bikes… trade BTCYC across a 16-product market.</p></div>
           <div class="feat reveal"><span class="feat-ico" data-ico="wallet"></span><b>Wallet &amp; transfer</b><p>Public wallet ID, 2FA-approved wallet-to-wallet transfers and a daily 100 BTCYC limit.</p></div>
           <div class="feat reveal"><span class="feat-ico" data-ico="shield"></span><b>Security &amp; transparency</b><p>Real-name verification, 2FA, session tracking, violation records and a complete BTCYC ledger.</p></div>
@@ -316,7 +317,7 @@
             <div class="fd"><b>Sep 20</b><small>Bike Fest · Fall</small></div>
             <div class="fd gold"><b>+50</b><small>BTCYC prize pool</small></div>
           </div>
-          <a class="btn btn-light btn-lg" href="app.html">See events →</a>
+          <a class="btn btn-light btn-lg" href="app.html">See events</a>
         </div>
 
         <div class="fest-visual reveal" aria-hidden="true">
@@ -378,7 +379,7 @@
               <span class="shop-price">480 BTCYC <small>≈ 384.00 €</small></span></div>
           </div>
         </div>
-        <p class="shop-note reveal">…and 10 more products. <a href="app.html">See the full market in the app →</a></p>
+        <p class="shop-note reveal">…and 10 more products. <a href="app.html">See the full market in the app</a></p>
       </div>
     </section>
 
@@ -518,7 +519,7 @@
           <div class="login-alt">
             <div class="login-sep">or</div>
             <button class="link-btn" id="demoBtn">No account yet? Explore the panel with demo data</button>
-            <a href="app.html">Not registered yet? Sign up in the app →</a>
+            <a href="app.html">Not registered yet? Sign up in the app</a>
           </div>
         </div>
       </div>

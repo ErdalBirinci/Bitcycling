@@ -32,8 +32,20 @@ const ago = ts => {
 };
 const initials = (a = '', b = '') => ((a[0] || 'B') + (b[0] || '')).toUpperCase();
 
+/* ---------- HTML escaping ----------
+   app.js builds markup with innerHTML everywhere, so every value that can
+   reach a template from outside (form fields, server state, storage) goes
+   through esc() before interpolation. Never drop this on a new sink. */
+const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' };
+const esc = s => String(s ?? '').replace(/[&<>"'`]/g, c => ESC_MAP[c]);
+/* only ever allow data:image URLs through, so a selfie cannot become javascript: or an attribute break-out */
+const safeUrl = s => /^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(String(s || '')) ? String(s) : '';
+/* escape a value that is meant to be used inside an attribute */
+const escAttr = s => safeUrl(s) ? safeUrl(s) : esc(s);
+
 /* ---------- SVG icon set (Lucide-style, 24×24, stroke) ---------- */
 const ICONS = {
+  power: '<path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>',
   bike: '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
   bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   ticket: '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2M13 11v2M13 17v2"/>',
@@ -140,6 +152,8 @@ function setNum(el, val, fmt = v => nf(v)) {
   const from = Number(el.dataset.n ?? to);
   el.dataset.n = to;
   if (Math.abs(to - from) < 0.005) { el.textContent = fmt(to); return; }
+  // pulse the element when the value rises (balance credit, km gain)
+  if (to > from) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
   const t0 = performance.now(), dur = 650;
   const step = t => {
     const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
@@ -155,7 +169,7 @@ const emptyIll = (e, t, h) => `<div class="empty-ill"><span>${ico(e)}</span><b>$
 
 /* ---------- state ---------- */
 const defaults = () => ({
-  user: null,
+  user: null, onboarded: false, dailyGoal: 25, installDismissed: false,
   balance: 0, earned: 0, spent: 0,
   todayKm: 0, todayEligibleKm: 0, creditedToday: 0, todayEarn: 0, todayQr: 0,
   totalKm: 0, totalMinutes: 0, qrCount: 0,
@@ -189,12 +203,12 @@ function ensureWallet() {
 
 /* sample wallets in the address book (demo data) */
 const CONTACTS = [
-  { name: 'Ella Kara',     handle: '@ellak',  id: 'BCYC-7A21-9F04', c: '#059669' },
-  { name: 'Max Reed',    handle: '@maxr', id: 'BCYC-3C88-1B57', c: '#2563EB' },
-  { name: 'Sara Demir',   handle: '@sarad', id: 'BCYC-9E40-6D12', c: '#DB2777' },
-  { name: 'Chris West',    handle: '@chrisw',  id: 'BCYC-5B73-4A29', c: '#D97706' },
-  { name: 'Zoe Arda',   handle: '@zoea',id: 'BCYC-2D96-8C31', c: '#7C3AED' },
-  { name: 'Kevin Grant',  handle: '@keving', id: 'BCYC-6F15-7E64', c: '#0891B2' }
+  { name: 'Ella Kara',   handle: '@ellak',  id: 'BCYC-7A21-9F04', c: '#047857' }, /* white initials: AA */
+  { name: 'Max Reed',    handle: '@maxr',   id: 'BCYC-3C88-1B57', c: '#2563EB' },
+  { name: 'Sara Demir',  handle: '@sarad',  id: 'BCYC-9E40-6D12', c: '#DB2777' },
+  { name: 'Chris West',  handle: '@chrisw', id: 'BCYC-5B73-4A29', c: '#B45309' },
+  { name: 'Zoe Arda',    handle: '@zoea',   id: 'BCYC-2D96-8C31', c: '#7C3AED' },
+  { name: 'Kevin Grant', handle: '@keving', id: 'BCYC-6F15-7E64', c: '#0E7490' }
 ];
 const contactByName = n => CONTACTS.find(c => c.name === n);
 
@@ -224,10 +238,23 @@ function load() {
     if (st.lastTransferDay !== dayKey()) { st.lastTransferDay = dayKey(); st.transferredToday = 0; }
     if (!st.sessions) st.sessions = defaultSessions();
     if (st.violations && st.violations.length >= 3) st.suspended = true;
+    // read-through cache: merge a newer server snapshot when a backend is configured
+    if (window.API && API.enabled()) API.pull().then(srv => {
+      if (!srv) return;
+      const localRev = JSON.parse(localStorage.getItem(KEY) || '{}').rev || 0;
+      if ((srv.rev || 0) > localRev) {
+        S = Object.assign(defaults(), srv);
+        save(); renderAll();
+        toast('State synced from server', 'good');
+      }
+    }).catch(() => {});
     return st;
   } catch { return defaults(); }
 }
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+const save = () => {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
+  if (window.API && API.enabled()) { S.rev = Date.now(); API.sync(S); }
+};
 
 /* ---------- data ---------- */
 const PRODUCTS = [
@@ -284,11 +311,134 @@ function confetti(n = 26) {
   }
 }
 
+/* ---------- PWA install prompt ---------- */
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();                        // suppress the browser's own bar
+  deferredInstall = e;
+  if (S.onboarded && !S.installDismissed) {
+    const c = $('#installCard'); if (c) c.hidden = false;
+  }
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstall = null;
+  const c = $('#installCard'); if (c) c.hidden = true;
+  notify('Bitcycling installed — ride safe', 'sparkle');
+});
+$('#installGo') && $('#installGo').addEventListener('click', async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  try { await deferredInstall.userChoice; } catch {}
+  deferredInstall = null;
+  $('#installCard').hidden = true;
+});
+$('#installNo') && $('#installNo').addEventListener('click', () => {
+  $('#installCard').hidden = true;
+  S.installDismissed = true; save();
+});
+
+/* ---------- local analytics (acquisition funnel) ---------- */
+const AKEY = 'bitcycling.analytics.v1';
+function trackFunnel(name, payload) {
+  try {
+    const a = JSON.parse(localStorage.getItem(AKEY)) || {};
+    a[name] = a[name] || { n: 0, last: 0 };
+    a[name].n++; a[name].last = Date.now();
+    localStorage.setItem(AKEY, JSON.stringify(a));
+  } catch {}
+  if (window.API && API.enabled()) API.track(name, payload || {});
+}
+function funnelSnapshot() { try { return JSON.parse(localStorage.getItem(AKEY)) || {}; } catch { return {}; } }
+/* the acquisition funnel an investor cares about */
+const FUNNEL_STEPS = [
+  ['signup', 'Signed up'], ['login', 'Logged in'],
+  ['ride_start', 'Started a ride'], ['ride_finish', 'Finished a ride'],
+  ['qr_scan', 'Scanned a QR'], ['quest_claim', 'Claimed a quest'],
+  ['redeem', 'Redeemed in market'], ['transfer_send', 'Sent a transfer']
+];
+function renderFunnel() {
+  const el = $('#funnelBars'); if (!el) return;
+  const a = funnelSnapshot();
+  const top = Math.max(1, ...FUNNEL_STEPS.map(([k]) => (a[k] || {}).n || 0));
+  el.innerHTML = FUNNEL_STEPS.map(([k, label]) => {
+    const n = (a[k] || {}).n || 0;
+    const pct = Math.round(n / top * 100);
+    return `<div class="funnel-row">
+      <span class="funnel-label">${label}</span>
+      <span class="funnel-track"><span class="funnel-fill" style="width:${n ? Math.max(6, pct) : 0}%"></span></span>
+      <span class="funnel-n">${n}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- onboarding (first run only) ---------- */
+const OB_STEPS = [
+  { ic: 'bike', t: 'Welcome to Bitcycling', p: 'Ride a bike, earn BTCYC, spend them on real rewards. Every 20 km is worth 1 BTCYC.' },
+  { ic: 'target', t: 'Set a daily goal', p: 'The daily earning limit is 100 km. Pick a target that keeps you moving — you can change it later.', goal: true },
+  { ic: 'shield', t: 'Fair play is automatic', p: 'GPS verifies your ride and a 40 km/h speed cap protects the reward pool. Faster than that counts as a violation.' },
+  { ic: 'bell', t: 'Never miss a reward', p: 'Get a nudge when a quest is ready to claim and when Bike Fest opens. You are in control of every alert.' }
+];
+let obIndex = 0;
+function showOnboarding() {
+  obIndex = 0;
+  const ob = $('#onboarding'); if (!ob) return;
+  ob.hidden = false;
+  paintOnboarding();
+  $('#obNext').onclick = () => {
+    if (obIndex >= OB_STEPS.length - 1) return finishOnboarding();
+    obIndex++; paintOnboarding();
+    if (obIndex === OB_STEPS.length - 1) tryNotif();
+  };
+  $('#obSkip').onclick = finishOnboarding;
+  $('#obGoal').onclick = e => {
+    const b = e.target.closest('[data-goal]'); if (!b) return;
+    $('#obGoal').querySelectorAll('.ob-g').forEach(x => x.classList.toggle('on', x === b));
+  };
+}
+function paintOnboarding() {
+  const s = OB_STEPS[obIndex];
+  $('#obIc').innerHTML = ico(s.ic);
+  $('#obTitle').textContent = s.t; $('#obText').textContent = s.p;
+  $('#obGoal').hidden = !s.goal;
+  $('#obDots').innerHTML = OB_STEPS.map((_, i) => `<i class="${i === obIndex ? 'on' : ''}"></i>`).join('');
+}
+function finishOnboarding() {
+  const sel = $('#obGoal').querySelector('.ob-g.on');
+  if (sel) S.dailyGoal = Number(sel.dataset.goal);
+  S.onboarded = true;
+  save();
+  $('#onboarding').hidden = true;
+  renderAll();
+  toast('All set — ride safe', 'good');
+}
+function tryNotif() { if ('Notification' in window && Notification.permission === 'default') askNotifPermission(); }
+
 /* ---------- notification center ---------- */
 function notify(text, icon = 'bell') {
   S.notifs.unshift({ id: Date.now() + Math.random(), ts: Date.now(), text, icon, read: false });
   if (S.notifs.length > 30) S.notifs.length = 30;
   save(); renderNotifDot();
+  if (window.API) API.track('notify', { icon: icon });
+  trackFunnel('notify', { icon });
+  // also surface as a real OS notification when the user has granted permission
+  if (S.settings && S.settings.osNotif !== false && 'Notification' in window && Notification.permission === 'granted') {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller)
+        navigator.serviceWorker.controller.showNotification('Bitcycling', { body: text, icon: 'icon.svg', badge: 'icon.svg', tag: 'bitcycling-' + icon });
+      else new Notification('Bitcycling', { body: text, icon: 'icon.svg' });
+    } catch {}
+  }
+}
+/* request OS notification permission once, from a user gesture */
+function askNotifPermission() {
+  if (!('Notification' in window)) return toast('This browser has no notification support.', 'bad');
+  if (Notification.permission === 'granted') { S.settings.osNotif = true; save(); return toast('Browser notifications are on', 'good'); }
+  if (Notification.permission === 'denied') return toast('Notifications are blocked in the browser settings.', 'bad');
+  Notification.requestPermission().then(p => {
+    S.settings.osNotif = p === 'granted';
+    save();
+    toast(p === 'granted' ? 'Browser notifications are on' : 'Notifications stay in-app only', p === 'granted' ? 'good' : 'bad');
+  }).catch(() => {});
 }
 function renderNotifDot() {
   const unread = (S.notifs || []).filter(n => !n.read).length;
@@ -426,6 +576,8 @@ function claimQuest(id) {
   if (q.prog() < q.target) return toast('Quest not completed yet.', 'bad');
   S.questsDone = S.questsDone || {};
   S.questsDone[questKey(q)] = Date.now();
+  if (window.API) API.track('quest_claim', { id: q.id, reward: q.reward });
+  trackFunnel('quest_claim', { id: q.id, reward: q.reward });
   save();
   addBalance(q.reward, 'bonus', `Quest reward · ${q.t}`);
   confetti(22);
@@ -535,7 +687,7 @@ function readSelfie(file, preview) {
   const r = new FileReader();
   r.onload = () => {
     selfieData = r.result;
-    preview.innerHTML = `<img src="${selfieData}" alt="Selfie" />`;
+    preview.innerHTML = `<img src="${escAttr(selfieData)}" alt="Selfie" />`;
   };
   r.readAsDataURL(file);
 }
@@ -569,6 +721,7 @@ $('#signupNext').addEventListener('click', () => {
   S = Object.assign(defaults(), { user: S.user, lastDay: dayKey() });
   S.settings.twoFA = true;
   save();
+  trackFunnel('signup', {});
   confetti(40);
   toast('Welcome! Access unlocked — 1 BTCYC sign-up gift credited.', 'good');
   addBalance(1, 'bonus', 'Sign-up gift');
@@ -588,7 +741,9 @@ function enterApp() {
   $('#authScreen').style.display = 'none';
   $('#appScreen').hidden = false;
   applyTheme();
+  trackFunnel('login', {});
   nav('home');
+  if (!S.onboarded) setTimeout(showOnboarding, 600);
 }
 function logout() {
   stopRide(false);
@@ -752,8 +907,22 @@ function simPoint(r, km) {
 /* ============================================================
    RIDE ENGINE
    ============================================================ */
-let timer = null, watchId = null, speedTarget = 18, overTicks = 0;
+let timer = null, watchId = null, speedTarget = 18, overTicks = 0, rideLock = null;
 const ride = () => S.ride;
+
+/* keep the screen awake while riding (Web Wake Lock — GPS rides die in a pocket otherwise) */
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator) || rideLock) return;
+  try { rideLock = await navigator.wakeLock.request('screen'); } catch {}
+}
+function releaseWakeLock() {
+  try { rideLock && rideLock.release(); } catch {}
+  rideLock = null;
+}
+// re-acquire after tab/background returns (the lock is released by the OS)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && S.rideActive) acquireWakeLock();
+});
 
 function startRide() {
   const r = ride();
@@ -765,6 +934,9 @@ function startRide() {
     watchId = 'pending';
   }
   S.rideActive = true;
+  acquireWakeLock();
+  if (window.API) API.track('ride_start', { source: r.source });
+  trackFunnel('ride_start', { source: r.source });
   r.km = r.km || 0; r.seconds = r.seconds || 0;
   clearInterval(timer);
   timer = setInterval(tick, 1000);
@@ -777,6 +949,7 @@ function pauseRide() {
   clearInterval(timer); timer = null;
   if (watchId && watchId !== 'pending') { navigator.geolocation.clearWatch(watchId); watchId = null; }
   S.rideActive = false;
+  releaseWakeLock();
   $('#rideToggle').textContent = 'Resume ride';
   $('#rideStatusPill').textContent = 'Paused';
   save();
@@ -787,6 +960,7 @@ function stopRide(confirm = true) {
   clearInterval(timer); timer = null;
   if (watchId && watchId !== 'pending') { navigator.geolocation.clearWatch(watchId); watchId = null; }
   S.rideActive = false;
+  releaseWakeLock();
   $('#rideToggle').textContent = r.km > 0 ? 'Start new ride' : 'Start ride';
   $('#rideStatusPill').textContent = 'Ready';
   save();
@@ -795,15 +969,42 @@ function stopRide(confirm = true) {
 function onGps(pos) {
   const r = ride();
   const c = pos.coords;
-  const spd = (c.speed != null && c.speed >= 0) ? c.speed * 3.6 : Math.min(LIMIT_SPEED - 2, 16);
-  r.gpsSpeed = spd;
-  if (r.lastLat != null) {
-    const d = haversine(r.lastLat, r.lastLon, c.latitude, c.longitude);
-    if (d < 0.6) accumulate(d, spd, 1);
+  const now = Date.now();
+
+  // poor accuracy (tunnel / city canyon) -> discard the fix instead of
+  // feeding garbage distance into the ledger
+  if (c.accuracy != null && c.accuracy > 60) {
+    $('#gpsPill').textContent = `● weak signal ±${Math.round(c.accuracy)} m`;
+    return;
   }
+
+  let d = 0;
+  const dt = r.lastFixTs ? (now - r.lastFixTs) / 1000 : 0;
+  if (r.lastLat != null && dt > 0) {
+    d = haversine(r.lastLat, r.lastLon, c.latitude, c.longitude);           // km
+    const implied = d / (dt / 3600);                                        // km/h
+    if (implied > 140 && d > 0.05) {                                        // impossible jump = GPS noise
+      r.lastLat = c.latitude; r.lastLon = c.longitude; r.lastFixTs = now;
+      $('#gpsPill').textContent = '● GPS filtering noise';
+      return;
+    }
+  }
+
+  // speed: device-reported when available, otherwise derived from the
+  // actual movement between the last two fixes (never a made-up constant)
+  let spd;
+  if (c.speed != null && c.speed >= 0) spd = c.speed * 3.6;
+  else if (d > 0.002 && dt > 0) spd = d / (dt / 3600);
+  else spd = r.gpsSpeed || 0;
+  r.gpsSpeed = spd;
+
+  if (d > 0.0005 && dt > 0.4) accumulate(Math.min(d, 0.6), spd, dt);        // ≥0.5 m per fix
+
   r.lastLat = c.latitude; r.lastLon = c.longitude;
+  r.lastFixTs = now;
+  r.gpsAcc = c.accuracy;
   pushPoint(c.latitude, c.longitude);
-  $('#gpsPill').textContent = '● GPS active';
+  $('#gpsPill').textContent = `● GPS live · ±${Math.round(c.accuracy || 0)} m`;
 }
 function onGpsErr() {
   if (watchId === 'pending') {
@@ -823,8 +1024,12 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 function tick() {
   const r = ride();
-  if (r.source === 'gps') {           // real-time clock flow
-    r.seconds += 1;
+  if (r.source === 'gps') {
+    // time is credited from real fix deltas inside accumulate(); the clock
+    // only advances here while no fix has arrived yet (signal lost / startup)
+    if (!r.lastFixTs || Date.now() - r.lastFixTs > 2500) r.seconds += 1;
+    if (S.rideActive && r.lastFixTs && Date.now() - r.lastFixTs > 8000)
+      $('#gpsPill').textContent = '● GPS signal lost — searching';
     renderRide();
     return;
   }
@@ -923,6 +1128,151 @@ function syncSourceUI() {
     : 'Simulation speeds up time; speed values are validated in real time against the 40 km/h limit.';
 }
 
+/* fill a container with skeleton placeholder rows (async loads) */
+function skeleton(el, rows = 3) {
+  if (!el) return;
+  el.classList.add('is-loading');
+  el.innerHTML = Array.from({ length: rows }, () =>
+    `<div class="skeleton" style="height:52px;margin-bottom:10px;padding:12px">
+       <div class="skeleton-line w60"></div><div class="skeleton-line w40"></div>
+     </div>`).join('');
+}
+function unskeleton(el) { if (el) el.classList.remove('is-loading'); }
+
+/* ---------- ride summary share card (canvas) ---------- */
+async function shareRideCard(sum) {
+  const W = 720, H = 960;                       // 3:4 — social-friendly
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+
+  // background: emerald gradient + faint topo-ish rings
+  const g = c.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#0E1B17'); g.addColorStop(.55, '#047857'); g.addColorStop(1, '#065F46');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.globalAlpha = .07; c.strokeStyle = '#fff'; c.lineWidth = 2;
+  for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(W * .8, H * .12, 90 + i * 58, 0, Math.PI * 2); c.stroke(); }
+  c.globalAlpha = 1;
+
+  const pad = 56;
+  c.fillStyle = '#8FE3C6';
+  c.font = '700 26px Manrope, sans-serif';
+  c.fillText('BITCYCLING', pad, pad + 26);
+
+  c.fillStyle = '#fff';
+  c.font = '700 132px "Space Grotesk", Manrope, sans-serif';
+  c.fillText(nf(sum.km, 1), pad, pad + 190);
+  c.font = '500 40px Manrope, sans-serif';
+  c.fillStyle = '#BFE8D8';
+  c.fillText('km ridden', pad, pad + 244);
+
+  // stat rows
+  const stats = [
+    ['Time', fmtTime(sum.seconds)],
+    ['Avg speed', nf(sum.avg, 1) + ' km/h'],
+    ['Eligible km', nf(sum.eligible, 1)],
+    ['Earned today', S.todayEarn + ' BTCYC']
+  ];
+  let y = pad + 340;
+  c.font = '500 30px Manrope, sans-serif';
+  stats.forEach(([k, v]) => {
+    c.fillStyle = 'rgba(255,255,255,.62)'; c.fillText(k, pad, y);
+    c.fillStyle = '#fff'; c.font = '700 30px Manrope, sans-serif';
+    const w = c.measureText(v).width;
+    c.fillText(v, W - pad - w, y);
+    c.font = '500 30px Manrope, sans-serif';
+    c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(pad, y + 18); c.lineTo(W - pad, y + 18); c.stroke();
+    y += 74;
+  });
+
+  // footer
+  y += 40;
+  c.fillStyle = sum.over ? '#FCD34D' : '#8FE3C6';
+  c.font = '700 26px Manrope, sans-serif';
+  c.fillText(sum.over ? 'Over-limit segment excluded' : 'Ride. Earn. Repeat.', pad, y);
+  c.fillStyle = 'rgba(255,255,255,.5)'; c.font = '500 22px Manrope, sans-serif';
+  c.fillText('erdalbirinci.github.io/Bitcycling', pad, y + 40);
+
+  cv.toBlob(async blob => {
+    if (!blob) return toast('Could not build the card.', 'bad');
+    const file = new File([blob], `bitcycling-${Math.round(sum.km)}km.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'My Bitcycling ride', text: `${nf(sum.km, 1)} km — earned ${S.todayEarn} BTCYC 🚴` }); return; }
+      catch { /* user cancelled — fall through to download */ }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = file.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Summary card saved as PNG', 'good');
+  }, 'image/png');
+}
+
+/* ---------- clubs & weekly tournament ---------- */
+const CLUBS = [
+  { id: 'bosphorus', name: 'Bosphorus Breakaways', city: 'Istanbul', ico: 'route', members: 214, weekly: [1820, 1610, 1440, 1310, 1180] },
+  { id: 'vondel', name: 'Vondelpark Velo', city: 'Amsterdam', ico: 'bike', members: 168, weekly: [1740, 1520, 1290, 1210, 1050] },
+  { id: 'tempelhof', name: 'Tempelhofer Tanglers', city: 'Berlin', ico: 'compass', members: 96, weekly: [1490, 1330, 1150, 980, 870] }
+];
+function myClubKm() {
+  // your km inside the weekly window (last 7 days)
+  const cut = Date.now() - 7 * 864e5;
+  return (S.rides || []).filter(r => r.ts >= cut).reduce((a, r) => a + (r.eligible || r.km), 0);
+}
+function renderClubs() {
+  const el = $('#clubList'), bd = $('#clubBoard'); if (!el) return;
+  $('#clubCount').textContent = CLUBS.length + ' clubs';
+  el.innerHTML = CLUBS.map(cl => {
+    const mine = S.clubId === cl.id;
+    const km = myClubKm();
+    const total = cl.weekly[0] + (mine ? Math.round(km * 10) : 0);
+    return `<div class="row-item club-row" data-club="${cl.id}">
+      <span class="list-ico ${mine ? 'green' : ''}">${ico(cl.ico)}</span>
+      <div class="list-body"><b>${cl.name}</b>
+        <small>${cl.city} · ${cl.members + (mine ? 1 : 0)} members · this week ${nf(total / 10, 0)} km</small></div>
+      <span class="pill ${mine ? 'pill-green' : 'pill-gray'}">${mine ? 'Joined' : 'Join'}</span>
+    </div>`;
+  }).join('');
+}
+function openClubBoard(id) {
+  const cl = CLUBS.find(c => c.id === id); if (!cl) return;
+  const mine = S.clubId === id;
+  const km = myClubKm();
+  const rows = cl.weekly.map((v, i) => ({
+    n: ['T. Yılmaz', 'M. van Dijk', 'K. Weber', 'S. Demir', 'L. Jansen'][i],
+    v, me: false
+  }));
+  if (mine) rows.push({ n: 'You', v: Math.round(km * 10), me: true });
+  rows.sort((a, b) => b.v - a.v);
+  $('#clubBoard').innerHTML = `
+    <div class="section-head" style="margin-top:6px"><h3>${cl.name} — weekly</h3>
+      <span class="badge ${rows[0].me ? 'badge-gold' : 'badge-green'}">${rows[0].me ? '🏆 You lead' : rows[0].n + ' leads'}</span></div>
+    ${rows.map((r, i) => `
+      <div class="list-row ${r.me ? 'is-me' : ''}">
+        <span class="rank ${i === 0 ? 'crown' : i < 3 ? 'top3' : ''}">${i === 0 ? ico('crown') : (i + 1)}</span>
+        <span class="list-body"><b>${r.n}</b><small>${nf(r.v / 10, 0)} km this week</small></span>
+        <span class="list-amt">${mine && r.me ? '<span class="pill pill-green">You</span>' : ''}</span>
+      </div>`).join('')}
+    ${mine ? '' : `<button class="btn btn-primary btn-lg" id="clubJoinBtn" style="width:100%;margin-top:12px">Join this club</button>`}`;
+  $('#clubList').hidden = true; $('#clubBoard').hidden = false; $('#clubBack').hidden = false;
+  const jb = $('#clubJoinBtn');
+  if (jb) jb.addEventListener('click', () => {
+    S.clubId = id; save();
+    notify(`You joined ${cl.name} — your km now count toward the weekly board.`, 'megaphone');
+    toast(`Joined ${cl.name}`, 'good');
+    renderClubs(); openClubBoard(id);
+  });
+}
+$('#clubList') && $('#clubList').addEventListener('click', e => {
+  const r = e.target.closest('[data-club]'); if (!r) return;
+  openClubBoard(r.dataset.club);
+});
+$('#clubBack') && $('#clubBack').addEventListener('click', () => {
+  $('#clubList').hidden = false; $('#clubBoard').hidden = true; $('#clubBack').hidden = true; renderClubs();
+});
+
 /* ---------- daily streak ---------- */
 function currentStreak() {
   const days = new Set(S.rideDays || []);
@@ -943,6 +1293,8 @@ function bumpRideStreak() {
 function finishRide() {
   const r = ride();
   const km = r.km, min = r.seconds / 60;
+  if (window.API) API.track('ride_finish', { km: +km.toFixed(2), min: Math.round(min), source: r.source, violations: (S.violations || []).length });
+  trackFunnel('ride_finish', { km: +km.toFixed(2), min: Math.round(min), source: r.source, violations: (S.violations || []).length });
   if (km > 0.01) {
     S.rides.unshift({
       ts: Date.now(), km: +km.toFixed(2), min: Math.round(min),
@@ -958,6 +1310,7 @@ function finishRide() {
   clearInterval(timer); timer = null;
   if (watchId && watchId !== 'pending') { navigator.geolocation.clearWatch(watchId); watchId = null; }
   S.rideActive = false;
+  releaseWakeLock();
   $('#rideToggle').textContent = 'Start ride';
   $('#rideFinish').disabled = true;
   $('#rideStatusPill').textContent = 'Completed';
@@ -977,8 +1330,13 @@ function finishRide() {
       <div><b>${nf(Math.min(S.todayEligibleKm, DAILY_KM), 1)}</b><small>daily / 100 km</small></div>
     </div>
     ${r.over ? `<div class="balance-warn">This ride exceeded 40 km/h and the excess did not convert to BTCYC. Repeated violations suspend your account.</div>` : ''}
-    <button class="btn btn-primary btn-lg" data-modal-close style="width:100%">Great, close</button>`);
+    <div style="display:flex; gap:10px; margin-top:14px">
+      <button class="btn btn-ghost btn-lg" id="shareRideBtn" style="flex:1">Share summary</button>
+      <button class="btn btn-primary btn-lg" data-modal-close style="flex:1.4">Great, close</button>
+    </div>`);
   if (!r.over) confetti(30);
+  const sb = $('#shareRideBtn');
+  if (sb) sb.addEventListener('click', () => shareRideCard({ km, seconds: r.seconds, avg, eligible: r.eligible, over: r.over, ts: Date.now() }));
 }
 
 /* ============================================================
@@ -1026,6 +1384,15 @@ document.addEventListener('click', e => {
 $('#marketSearch').addEventListener('input', e => { filterQ = e.target.value.trim().toLowerCase(); renderMarket(); });
 $('#filterBtn').addEventListener('click', () => toast('Filter with category chips: ' + filterCat));
 
+/* ride history search + sort */
+$('#rideSearch').addEventListener('input', e => { rideQ = e.target.value.trim().toLowerCase(); renderRideHistory(); });
+$('#rideSort').addEventListener('click', e => {
+  const b = e.target.closest('[data-sort]'); if (!b) return;
+  rideSort = b.dataset.sort;
+  $('#rideSort').querySelectorAll('.sort-chip').forEach(c => c.classList.toggle('is-on', c === b));
+  renderRideHistory();
+});
+
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-product]'); if (!el) return;
   const p = PRODUCTS.find(x => x.id === el.dataset.product); if (!p) return;
@@ -1054,6 +1421,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-trade]'); if (!b) return;
   const p = PRODUCTS.find(x => x.id === b.dataset.trade); if (!p) return;
   if (S.balance < p.btc) return toast('Insufficient balance.', 'bad');
+  trackFunnel('redeem', { product: p.name, btc: p.btc });
   addBalance(-p.btc, 'spend', `Trade · ${p.name}`);
   const id = 'BC-' + Math.floor(1000 + Math.random() * 8999);
   S.orders.unshift({ id, name: p.name, store: p.store, btc: p.btc, icon: p.icon, status: 'Preparing', ts: Date.now() });
@@ -1079,6 +1447,8 @@ function grantQr(source) {
   const city = $('#qrCity') ? $('#qrCity').value : 'Istanbul';
   S.todayQr++; S.qrCount++;
   addBalance(gain, 'bonus', `QR bonus · ${city}`);
+  if (window.API) API.track('qr_scan', { city: city, gain: gain, source: source });
+  trackFunnel('qr_scan', { city: city, gain: gain, source: source });
   confetti(24);
   notify(`+${gain} BTCYC QR bonus · ${city}`, 'qr');
   toast(`+${gain} BTCYC — ${city} QR code scanned${source === 'cam' ? ' (camera)' : ''}!`, 'good');
@@ -1127,7 +1497,7 @@ async function startCam() {
     else $('#camHint').textContent = 'QR engine failed to load · use simulation';
   } catch (err) {
     const e = $('#camErr');
-    if (e) e.innerHTML = `<div class="cam-fail">Could not open the camera (${err && err.name ? err.name : 'no permission'}). Grant camera permission and try again, or use simulation.</div>`;
+    if (e) e.innerHTML = `<div class="cam-fail">Could not open the camera (${esc(err && err.name ? err.name : 'no permission')}). Grant camera permission and try again, or use simulation.</div>`;
     const h = $('#camHint'); if (h) h.textContent = 'Camera unavailable';
   }
 }
@@ -1176,6 +1546,22 @@ $('#toggleData').addEventListener('change', e => {
   toast(e.target.checked ? 'Data sharing enabled.' : 'Data sharing disabled.');
 });
 $('#toggleNotify').addEventListener('change', e => { S.settings.notify = e.target.checked; save(); });
+$('#osNotifBtn').addEventListener('click', () => askNotifPermission());
+$('#langRow').addEventListener('click', () => setLang(getLang() === 'en' ? 'tr' : 'en'));
+function renderNotifSettings() {
+  const el = $('#osNotifState'); if (!el || !('Notification' in window)) return;
+  const p = Notification.permission;
+  el.textContent = p === 'granted' ? 'On — alerts arrive even when the app is closed'
+    : p === 'denied' ? 'Blocked in browser settings' : 'Off — get alerts even when the app is closed';
+  const g = $('#dailyGoalVal'); if (g) g.textContent = (S.dailyGoal || 25) + ' km';
+}
+/* rotate the daily goal: 10 → 25 → 50 → 10 → … */
+$('#dailyGoalVal') && $('#dailyGoalVal').closest('.row-item').addEventListener('click', () => {
+  const opts = [10, 25, 50];
+  S.dailyGoal = opts[(opts.indexOf(S.dailyGoal || 25) + 1) % opts.length];
+  save(); renderNotifSettings(); renderHome();
+  toast(`Daily goal set to ${S.dailyGoal} km`, 'good');
+});
 $('#profileSelfie').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
@@ -1218,15 +1604,17 @@ function renderHome() {
   $('#streakChip').style.display = streak > 0 ? '' : 'none';
   $('#streakNum').textContent = streak;
 
-  const av = u.selfie ? `<img src="${u.selfie}" alt="" />` : initials(u.name, u.surname);
+  const av = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : initials(u.name, u.surname);
   $('#homeAvatar').innerHTML = av;
   setNum($('#chipBalance'), S.balance);
   setNum($('#heroBalance'), S.balance);
   $('#heroFiat').textContent = `≈ ${money(S.balance)} in value`;
 
-  const prog = Math.min(S.todayKm, DAILY_KM) / DAILY_KM;
+  const goal = S.dailyGoal > 0 ? S.dailyGoal : DAILY_KM;
+  const prog = Math.min(S.todayKm, goal) / goal;
   $('#ringFg').style.strokeDashoffset = String(251.3 * (1 - prog));
   $('#ringKm').textContent = nf(S.todayKm, 1);
+  if ($('#ringGoal')) $('#ringGoal').textContent = `/ ${goal} km`;
 
   setNum($('#statTodayKm'), S.todayKm, v => nf(v, 1));
   setNum($('#statTodayEarn'), S.todayEarn, v => nf(v, 0));
@@ -1257,7 +1645,7 @@ function ledgerRow(l) {
   return `
     <div class="list-row">
       <span class="list-ico ${ic[1]}">${ico(ic[0])}</span>
-      <div class="list-body"><b>${l.note}</b><small>${ago(l.ts)}${l.trx ? ' · ' + l.trx : ''}</small></div>
+      <div class="list-body"><b>${esc(l.note)}</b><small>${ago(l.ts)}${l.trx ? ' · ' + esc(l.trx) : ''}</small></div>
       <span class="list-amt ${l.amount > 0 ? 'plus' : 'minus'}">${sign}${nf(l.amount)}</span>
     </div>`;
 }
@@ -1310,16 +1698,34 @@ function renderRide() {
 }
 
 /* ride history + route map */
+let rideSort = 'new', rideQ = '';
 function renderRideHistory() {
   const el = $('#rideHistory'); if (!el) return;
-  el.innerHTML = S.rides.length ? S.rides.slice(0, 8).map((r, i) => `
+  let list = S.rides.map((r, i) => ({ r, i }));
+  if (rideQ) {
+    const q = rideQ;
+    list = list.filter(({ r }) =>
+      `${nf(r.km, 1)} km ${r.min} min ${nf(r.avg, 1)} km/h ${ago(r.ts)} ${(r.points && r.points.length) ? 'route' : ''}`.toLowerCase().includes(q));
+  }
+  const by = {
+    new: (a, b) => b.r.ts - a.r.ts,
+    old: (a, b) => a.r.ts - b.r.ts,
+    long: (a, b) => b.r.km - a.r.km,
+    fast: (a, b) => b.r.avg - a.r.avg
+  }[rideSort];
+  list.sort(by);
+  const shown = list.slice(0, 8);
+  const cnt = $('#rideCount');
+  if (cnt) cnt.textContent = list.length + (list.length === 1 ? ' ride' : ' rides');
+  el.innerHTML = shown.length ? shown.map(({ r, i }) => `
     <button class="history-row" data-ride="${i}">
       <span class="list-ico green">${ico('map')}</span>
       <span class="list-body"><b>${nf(r.km, 1)} km · ${r.min} min</b>
         <small>${ago(r.ts)} · avg. ${nf(r.avg, 1)} km/h${r.points && r.points.length > 1 ? ' · route recorded' : ''}</small></span>
       <span class="list-amt">→</span>
     </button>`).join('')
-    : emptyIll('compass', 'No rides yet', 'When you finish a ride its route appears on the map and you can reopen it here.');
+    : (S.rides.length ? emptyIll('compass', 'No rides match', 'Try a different search term or sort order.')
+      : emptyIll('compass', 'No rides yet', 'When you finish a ride its route appears on the map and you can reopen it here.'));
 }
 function openRideHistory(i) {
   const r = S.rides[i]; if (!r) return;
@@ -1375,10 +1781,12 @@ function renderEvents() {
   $('#qrCity').disabled = false;
 
   const { all } = rankOf();
+  const top = Math.max(1, ...all.map(r => r.km));
   $('#eventsBoard').innerHTML = all.map((r, i) => `
     <div class="list-row" ${r.me ? 'style="background:var(--primary-tint)"' : ''}>
       <span class="list-ico ${i < 3 ? 'gold' : 'green'}">${i + 1}</span>
-      <div class="list-body"><b>${r.n}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km</small></div>
+      <div class="list-body"><b>${r.n}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km</small>
+        <span class="mini-bar"><i style="width:${Math.max(4, Math.round(r.km / top * 100))}%"></i></span></div>
       <span class="list-amt ${r.me ? 'plus' : ''}">${i < 3 ? ico(i === 0 ? 'trophy' : 'medal') : ''}</span>
     </div>`).join('');
 }
@@ -1525,12 +1933,14 @@ function sendTransfer() {
   const raw = $('#tTo').value;
   const amt = Number(String($('#tAmt').value).replace(',', '.'));
   const otp = otpValue($('#tOtp'));
+  if (window.API) API.track('transfer_send', { to: raw, amount: amt });
+  trackFunnel('transfer_send', { to: raw, amount: amt });
 
   const rec = resolveRecipient(raw);
   if (!rec) return toast('Choose a recipient or enter a wallet address.', 'bad');
   if (rec.self) return toast('You cannot send a transfer to your own wallet.', 'bad');
   if (rec.notFound) {
-    $('#tNoMatch').innerHTML = `<div class="no-contact">“${raw.trim()}” wallet not found. Pick a recipient from your contacts.</div>`;
+    $('#tNoMatch').innerHTML = `<div class="no-contact">${ico('search')} “${esc(raw.trim())}” wallet not found. Pick a recipient from your contacts.</div>`;
     return toast('Recipient not found.', 'bad');
   }
   if (!amt || amt <= 0) return toast('Enter a valid amount.', 'bad');
@@ -1684,6 +2094,18 @@ function renderCharts() {
     <circle class="dot" cx="${pts[29][0].toFixed(1)}" cy="${pts[29][1].toFixed(1)}" r="4.5"/>`;
   const d30 = new Date(Date.now() - 29 * 864e5);
   $('#chartEarnAxis').innerHTML = `<span>${d30.getDate()}.${d30.getMonth() + 1}</span><span>today</span>`;
+
+  // monthly heatmap: 30 days as intensity cells
+  const hm = $('#chartHeat');
+  if (hm) {
+    const maxKm = Math.max(1, ...vals);
+    hm.innerHTML = vals.map((v, i) => {
+      const a = v <= 0 ? 0 : Math.min(1, 0.25 + (v / maxKm) * 0.75);
+      const dt = new Date(Date.now() - (29 - i) * 864e5);
+      const label = `${dt.getDate()}.${dt.getMonth() + 1}: ${nf(v, 2)} BTCYC`;
+      return `<i class="heat-cell" style="opacity:${a || 0.08}" title="${label}"></i>`;
+    }).join('');
+  }
 }
 function renderBadges() {
   $('#badgeGrid').innerHTML = BADGES.map(b => {
@@ -1735,7 +2157,7 @@ function renderFriends() {
 
 function renderProfile() {
   const u = S.user || {};
-  $('#profileAvatar').innerHTML = u.selfie ? `<img src="${u.selfie}" alt="" />` : initials(u.name, u.surname);
+  $('#profileAvatar').innerHTML = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : initials(u.name, u.surname);
   $('#profileName').textContent = [u.name, u.surname].filter(Boolean).join(' ') || 'Bitcycling User';
   $('#profileEmail').textContent = u.email || '—';
   $('#profilePhone').textContent = u.phone || '—';
@@ -1744,6 +2166,7 @@ function renderProfile() {
   $('#toggle2fa').checked = !!S.settings.twoFA;
   $('#toggleData').checked = !!S.settings.dataShare;
   $('#toggleNotify').checked = !!S.settings.notify;
+  renderNotifSettings();
 
   const v = S.violations.length;
   $('#violationText').textContent = v ? `${v} records · latest ${ago(S.violations[0].ts)} (${S.violations[0].speed} km/h)` : 'No violations — clean';
@@ -1766,11 +2189,13 @@ function renderProfile() {
 
 function renderAll() {
   if ($('#appScreen').hidden) return;
-  renderHome(); renderRide(); renderMarket(); renderEvents(); renderWallet(); renderProfile();
-  renderRideHistory(); renderQuests(); renderNotifDot(); updateSuspension();
+  renderHome(); renderRide(); renderMarket(); renderEvents(); renderClubs(); renderWallet(); renderProfile();
+  renderRideHistory(); renderQuests(); renderNotifDot(); updateSuspension(); renderFunnel();
   syncSourceUI();
   hydrateIcons();
+  if (window.tDOM && getLang() !== 'en') tDOM();
 }
+window.onLangChange = () => renderAll();
 
 /* ---------- periodic update ---------- */
 setInterval(() => { if (!$('#appScreen').hidden) renderAll(); }, 60000);
@@ -1782,6 +2207,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 
 /* ---------- startup ---------- */
 applyTheme();
+if (window.setLang) setLang(localStorage.getItem('bitcycling.lang') || 'en');
 buildGauge();
 hydrateIcons();
 $('#views').addEventListener('scroll', () => {

@@ -119,7 +119,7 @@ function hydrateIcons(root) {
 /* ---------- state ---------- */
 const defaults = () => ({
   user: null, balance: 0, earned: 0, spent: 0,
-  todayKm: 0, todayEligibleKm: 0, creditedToday: 0, todayEarn: 0, todayQr: 0, todaySocial: 0,
+  todayKm: 0, todayEligibleKm: 0, creditedToday: 0, todayEarn: 0, todayQr: 0,
   totalKm: 0, totalMinutes: 0, qrCount: 0, streak: 0,
   ledger: [], orders: [], rides: [], violations: [], notifs: [], friends: [], rideDays: [],
   badges: [], questsDone: {}, sessions: [], settings: {}, walletId: null, inviteCode: null,
@@ -170,7 +170,6 @@ function last7() {
 const QUESTS = [
   { id: 'd_km', ico: 'bike', t: 'Pedal 10 km', type: 'daily', target: 10, unit: 'km', reward: .5, prog: () => S.todayKm || 0 },
   { id: 'd_qr', ico: 'qr', t: 'Scan 1 QR code', type: 'daily', target: 1, unit: 'code', reward: .3, prog: () => S.todayQr || 0 },
-  { id: 'd_soc', ico: 'chat', t: 'Interact in the feed', type: 'daily', target: 1, unit: 'interaction', reward: .2, prog: () => S.todaySocial || 0 },
   { id: 'w_km', ico: 'route', t: 'Ride 50 km', type: 'weekly', target: 50, unit: 'km', reward: 2, prog: () => last7().total },
   { id: 'w_ride', ico: 'flag', t: 'Complete 3 rides', type: 'weekly', target: 3, unit: 'ride', reward: 1.5, prog: () => (S.rides || []).filter(r => Date.now() - r.ts < 7 * 864e5).length }
 ];
@@ -550,7 +549,7 @@ function renderPhoneMock() {
   const chip = $('.pm-streak');
   chip.style.display = streak > 0 ? '' : 'none';
   $('#pmStreak').textContent = streak;
-  $('#pmAvatar').innerHTML = u.selfie ? `<img src="${u.selfie}" alt="" />` : esc(initials(u.name, u.surname));
+  $('#pmAvatar').innerHTML = u.selfie ? `<img src="${/^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(u.selfie) ? u.selfie : ''}" alt="" />` : esc(initials(u.name, u.surname));
   $('#pmChipBal').textContent = nf(S.balance);
   $('#pmBalance').textContent = nf(S.balance);
   $('#pmFiat').textContent = `≈ ${money(S.balance)} in value`;

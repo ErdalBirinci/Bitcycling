@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://apis.google.com https://accounts.google.com; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self'; object-src 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#059669" />
 <meta name="description" content="Bitcycling — pedal to earn BTCYC and redeem them for real products." />
@@ -11,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="styles.css" />
 </head>
@@ -22,7 +23,8 @@
 
     <!-- ============ AUTH / ONBOARDING ============ -->
     <section class="auth" id="authScreen">
-      <div class="auth-glow"></div>
+      <div class="auth-topo" aria-hidden="true"></div>
+<div class="auth-topo2" aria-hidden="true"></div>
 
       <!-- Step: Welcome -->
       <div class="auth-pane is-active" data-pane="welcome">
@@ -43,7 +45,7 @@
         <div class="auth-actions">
           <button class="btn btn-primary btn-lg" data-auth-go="signup">Create account</button>
           <button class="btn btn-ghost btn-lg" data-auth-go="login">I already have an account</button>
-          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
+          <button class="btn btn-link" data-auth-go="demo">Explore with demo data</button>
         </div>
       </div>
 
@@ -140,7 +142,7 @@
         </div>
         <div class="auth-actions">
           <button class="btn btn-primary btn-lg" id="loginBtn">Log in</button>
-          <button class="btn btn-link" data-auth-go="demo">Explore with demo data →</button>
+          <button class="btn btn-link" data-auth-go="demo">Explore with demo data</button>
         </div>
       </div>
     </section>
@@ -195,7 +197,7 @@
                   <circle class="ring-bg" cx="48" cy="48" r="40" />
                   <circle class="ring-fg" cx="48" cy="48" r="40" id="ringFg" />
                 </svg>
-                <div class="ring-text"><b id="ringKm">0</b><small>/ 100 km</small></div>
+                <div class="ring-text"><b id="ringKm">0</b><small><span id="ringGoal">/ 25 km</span><span class="ring-of">of today</span></small></div>
               </div>
             </div>
             <div class="hero-actions">
@@ -217,25 +219,25 @@
               <span class="earn-ico" data-ico="bike"></span>
               <b>Pedal to earn</b>
               <p>Every 20 km = 1 BTCYC. Automatic credit within the 40 km/h limit via GPS.</p>
-              <span class="earn-link">Ride now →</span>
+              <span class="earn-link">Ride now</span>
             </article>
             <article class="earn-card" data-nav="events">
               <span class="earn-ico" data-ico="qr"></span>
               <b>QR events</b>
               <p>Scan city- and country-based QR codes to earn extra bonus BTCYC.</p>
-              <span class="earn-link">Scan a code →</span>
+              <span class="earn-link">Scan a code</span>
             </article>
             <article class="earn-card" data-nav="events">
               <span class="earn-ico" data-ico="flag"></span>
               <b>Bitcycling Bike Fest</b>
               <p>Twice a year, race on designated routes; place in the standings and win prizes.</p>
-              <span class="earn-link">Events →</span>
+              <span class="earn-link">Events</span>
             </article>
             <article class="earn-card" data-nav="events">
               <span class="earn-ico" data-ico="trophy"></span>
               <b>Competition prizes</b>
               <p>Earn BTCYC in the longest-distance, most-QR and social media contests.</p>
-              <span class="earn-link">Leaderboards →</span>
+              <span class="earn-link">Leaderboards</span>
             </article>
           </div>
 
@@ -245,6 +247,18 @@
 
           <div class="section-head"><h3>Recent activity</h3><button class="btn btn-link" data-nav="wallet">All</button></div>
           <div class="list-card" id="homeLedger"></div>
+
+          <!-- PWA install prompt (shown only when the browser offers it) -->
+          <div class="install-card" id="installCard" hidden>
+            <div class="install-txt">
+              <b>Add Bitcycling to your home screen</b>
+              <small>Install the app — opens instantly, works offline, keeps your rides safe.</small>
+            </div>
+            <div class="install-btns">
+              <button class="btn btn-primary btn-sm" id="installGo">Install</button>
+              <button class="btn btn-ghost btn-sm" id="installNo">Not now</button>
+            </div>
+          </div>
 
           <div class="section-head"><h3>Community leaderboard</h3><button class="btn btn-link" data-nav="events">Details</button></div>
           <div class="list-card" id="homeBoard"></div>
@@ -338,7 +352,17 @@
             </ul>
           </div>
 
-          <div class="section-head"><h3>Ride history</h3><span class="badge badge-green">route map</span></div>
+          <div class="section-head"><h3>Ride history</h3><span class="badge badge-green" id="rideCount">4 rides</span></div>
+          <div class="searchbar">
+            <span class="search-ico"></span>
+            <input type="search" id="rideSearch" aria-label="Search rides by distance, minimum time or average speed" placeholder="Search rides — distance, min, avg…" autocomplete="off">
+          </div>
+          <div class="sortbar" id="rideSort">
+            <button class="sort-chip is-on" data-sort="new">Newest</button>
+            <button class="sort-chip" data-sort="old">Oldest</button>
+            <button class="sort-chip" data-sort="long">Longest</button>
+            <button class="sort-chip" data-sort="fast">Fastest</button>
+          </div>
           <div class="list-card" id="rideHistory"></div>
         </section>
 
@@ -347,7 +371,7 @@
           <div class="search-row">
             <label class="search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-              <input type="search" id="marketSearch" placeholder="Search products, stores…" />
+              <input type="search" id="marketSearch" aria-label="Search products and stores" placeholder="Search products, stores…" />
             </label>
             <button class="icon-btn" id="filterBtn" aria-label="Filter">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -450,6 +474,11 @@
 
           <div class="section-head"><h3>Monthly leaderboard</h3></div>
           <div class="list-card" id="eventsBoard"></div>
+
+          <div class="section-head"><h3>Clubs &amp; weekly tournament</h3><span class="badge badge-gold" id="clubCount">3 clubs</span></div>
+          <div class="list-card" id="clubList"></div>
+          <div class="list-card" id="clubBoard" hidden></div>
+          <button class="btn btn-soft btn-lg" id="clubBack" hidden>← All clubs</button>
         </section>
 
         <!-- ---------- WALLET ---------- -->
@@ -547,10 +576,14 @@
             <div class="chart-head"><b>Last 7 days · distance</b><span id="chartWeekTotal">0 km</span></div>
             <div class="bars" id="chartWeek"></div>
           </div>
+
+          <div class="section-head"><h3>Activity funnel</h3><span class="badge badge-green">this device</span></div>
+          <div class="funnel" id="funnelBars"></div>
           <div class="chart-card">
             <div class="chart-head"><b>Last 30 days · BTCYC earned</b><span id="chartEarnTotal">0 BTCYC</span></div>
             <svg class="spark" id="chartEarn" viewBox="0 0 300 110" preserveAspectRatio="none" aria-label="Earnings chart"></svg>
             <div class="chart-axis" id="chartEarnAxis"></div>
+            <div class="heat" id="chartHeat" aria-label="Earnings heatmap"></div>
           </div>
 
           <div class="section-head"><h3>Badges</h3><span class="badge badge-gold" id="badgeCount">0 / 11</span></div>
@@ -587,8 +620,10 @@
           <div class="list-card">
             <div class="row-item"><div><b>Earning notifications</b><small>Alert me when BTCYC is credited</small></div>
               <label class="switch"><input type="checkbox" id="toggleNotify" checked /><i></i></label></div>
+            <button class="row-item row-btn" id="osNotifBtn"><div><b>Browser notifications</b><small id="osNotifState">Off - get alerts even when the app is closed</small></div><span class="row-ico" data-ico="bell"></span></button>
+            <div class="row-item"><div><b>Daily goal</b><small>Your personal target (limit stays 100 km)</small></div><span class="mono muted" id="dailyGoalVal">25 km</span></div>
             <div class="row-item"><div><b>Bike speed limit</b><small>Maximum speed for BTCYC</small></div><span class="mono muted">40 km/h</span></div>
-            <div class="row-item"><div><b>Language</b><small>Interface language</small></div><span class="mono muted">EN</span></div>
+            <button class="row-item row-btn" id="langRow"><div><b>Language</b><small>Interface language</small></div><span class="mono muted" id="langVal">EN</span></button>
             <div class="row-item"><div><b>Theme</b><small>Light / dark appearance</small></div>
               <div class="seg seg-mini" id="themeSeg">
                 <button data-theme-set="light">Light</button>
@@ -598,7 +633,7 @@
             <div class="row-item"><div><b>Daily transfer limit</b><small>Sent today</small></div><span class="mono muted" id="transferLeft">100 / 100</span></div>
             <div class="row-item"><div><b>Wallet transfers</b><small>All transfers protected by 2FA</small></div><span class="pill pill-green">Secure</span></div>
             <button class="row-item row-btn" id="resetBtn"><div><b class="danger">Reset demo data</b><small>Deletes all progress</small></div><span>↺</span></button>
-            <button class="row-item row-btn" id="logoutBtn"><div><b>Log out</b><small>Sign out</small></div><span>→</span></button>
+            <button class="row-item row-btn" id="logoutBtn"><div><b>Log out</b><small>Sign out</small></div><span class="row-ico" data-ico="power"></span></button>
           </div>
         </section>
       </main>
@@ -648,11 +683,32 @@
         <p class="field-hint">Appeals are reviewed within 48 hours. Verified accounts are reopened.</p>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- ============ ONBOARDING (first run only) ============ -->
+    <div class="onboarding" id="onboarding" hidden>
+      <div class="ob-card">
+        <div class="ob-ic" id="obIc"></div>
+        <h3 id="obTitle">Welcome to Bitcycling</h3>
+        <p id="obText">Ride a bike, earn BTCYC, spend them on real rewards. Every 20 km is worth 1 BTCYC.</p>
+        <div class="ob-goal" id="obGoal" hidden>
+          <button class="ob-g" data-goal="10">10 km/day</button>
+          <button class="ob-g on" data-goal="25">25 km/day</button>
+          <button class="ob-g" data-goal="50">50 km/day</button>
+        </div>
+        <div class="ob-foot">
+          <div class="ob-dots" id="obDots"></div>
+          <div class="ob-btns">
+            <button class="btn btn-ghost btn-sm" id="obSkip">Skip</button>
+            <button class="btn btn-primary btn-sm" id="obNext">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="window.__leafletFailed=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" onerror="window.__jsqrFailed=1"></script>
+<script src="api.js"></script>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

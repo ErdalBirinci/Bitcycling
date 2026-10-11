@@ -8,7 +8,7 @@
   --surface-2:#F7FAF9;
   --text:#0B1B16;
   --text-soft:#31423C;
-  --muted:#6B7F78;
+  --muted:#62736C;          /* 5.01:1 on --surface (WCAG AA 4.5:1) */
   --line:rgba(11,27,22,.09);
   --line-strong:rgba(11,27,22,.5);
   --track:rgba(11,27,22,.08);
@@ -57,14 +57,14 @@ p{margin:0}
   padding:12px 20px;border-radius:14px;border:1px solid transparent;cursor:pointer;transition:.18s;white-space:nowrap}
 .btn:active{transform:translateY(1px)}
 .btn-lg{padding:15px 26px;font-size:1rem;border-radius:16px}
-.btn-primary{background:var(--primary);color:#fff;box-shadow:0 10px 24px rgba(5,150,105,.28)}
-.btn-primary:hover{background:var(--primary-600);box-shadow:0 14px 30px rgba(5,150,105,.34);transform:translateY(-2px)}
+.btn-primary{background:var(--primary-600);color:#fff;box-shadow:0 10px 24px rgba(5,150,105,.28)}
+.btn-primary:hover{background:var(--primary-700);box-shadow:0 14px 30px rgba(5,150,105,.34);transform:translateY(-2px)}
 .btn-soft{background:var(--surface);color:var(--text);border-color:var(--line);box-shadow:var(--shadow-s)}
 .btn-soft:hover{border-color:rgba(5,150,105,.4);color:var(--primary-600)}
 .btn-ghost{background:rgba(255,255,255,.7);color:var(--text);border-color:rgba(11,27,22,.16);backdrop-filter:blur(8px)}
 .btn-ghost:hover{background:#fff;border-color:var(--primary)}
 .btn .ico{width:1.05em;height:1.05em}
-.link-btn{background:none;border:0;font:inherit;font-weight:800;color:var(--primary-600);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+.link-btn{background:none;border:0;font:inherit;font-weight:800;color:var(--primary-600);cursor:pointer;padding:1px 0;text-decoration:underline;text-underline-offset:3px}  /* 1px: 23px -> 25px target */
 
 /* ---------- top bar ---------- */
 .snav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.62);backdrop-filter:blur(20px) saturate(1.6);
@@ -230,7 +230,7 @@ p{margin:0}
 .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 20px;
   box-shadow:var(--shadow-s);position:relative;transition:.2s}
 .step:hover{transform:translateY(-4px);box-shadow:var(--shadow-m);border-color:rgba(5,150,105,.32)}
-.step-n{position:absolute;top:18px;right:20px;font-family:var(--display);font-size:2.1rem;font-weight:700;color:var(--primary-soft)}
+.step-n{position:absolute;top:18px;right:20px;font-family:var(--display);font-size:2.1rem;font-weight:700;color:var(--primary)}   /* --primary-soft is 1.12:1 on white; it is the only sequence cue, so 3:1 applies */
 .step-ico{width:48px;height:48px;border-radius:16px;background:var(--primary-tint);color:var(--primary-600);
   display:grid;place-items:center;font-size:1.4rem;margin-bottom:14px}
 .step b{display:block;font-family:var(--display);font-size:1.06rem;margin-bottom:6px}
@@ -247,7 +247,13 @@ p{margin:0}
   border:1px solid var(--line);border-radius:14px;padding:8px 14px;background:var(--surface-2);text-align:center;outline:none}
 .calc-in input[type=number]:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(5,150,105,.14)}
 .calc-in span{font-weight:800;color:var(--muted);font-size:.92rem}
-.calc input[type=range]{width:100%;margin:16px 0 4px;accent-color:var(--primary);height:6px}
+/* 24px target: author set height:6px, which removes the UA-default exemption (WCAG 2.5.8) */
+.calc input[type=range]{width:100%;margin:16px 0 4px;height:24px;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.calc input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:var(--primary-soft)}
+.calc input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--primary-600);border:2px solid var(--surface);box-shadow:0 2px 8px rgba(5,150,105,.35);margin-top:-9px}
+.calc input[type=range]::-moz-range-track{height:6px;border-radius:99px;background:var(--primary-soft)}
+.calc input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--primary-600);border:2px solid var(--surface);box-shadow:0 2px 8px rgba(5,150,105,.35)}
+.calc input[type=range]:focus-visible{outline:3px solid var(--primary-600);outline-offset:4px;border-radius:99px}
 .calc-out{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
 .calc-out>div{background:var(--primary-tint);border:1px solid rgba(5,150,105,.18);border-radius:16px;padding:14px}
 .calc-out>div:last-child{background:var(--gold-soft);border-color:rgba(245,158,11,.28)}
@@ -303,6 +309,7 @@ p{margin:0}
 .shop-price{display:flex;align-items:baseline;gap:8px;color:var(--gold-deep);font-family:var(--display);font-weight:700}
 .shop-price small{color:var(--muted);font-family:var(--font);font-weight:700;font-size:.76rem}
 .shop-note{margin-top:26px;text-align:center;color:var(--muted);font-size:.92rem}
+.shop-note a{padding:2px 0}   /* 20px inline link -> 24px target */
 
 /* ---------- FAQ ---------- */
 .faq{max-width:780px;margin:0 auto;display:grid;gap:12px}
@@ -337,7 +344,7 @@ p{margin:0}
 .form-msg.ok{background:var(--primary-soft);color:var(--primary-700)}
 .login-card .btn{width:100%;margin-top:20px}
 .login-alt{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:18px;font-size:.87rem}
-.login-alt a{font-weight:800}
+.login-alt a{font-weight:800;padding:1px 0}   /* 23px -> 25px target */
 .login-sep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.76rem;font-weight:800;
   text-transform:uppercase;letter-spacing:.08em;width:100%}
 .login-sep::before,.login-sep::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -348,7 +355,7 @@ p{margin:0}
 .foot .brand{color:#fff}
 .foot p{font-size:.86rem;max-width:34em;color:#8FABA1}
 .foot-links{display:flex;gap:22px;flex-wrap:wrap;font-size:.88rem;font-weight:700}
-.foot-links a{color:#B7CFC6}
+.foot-links a{color:#B7CFC6;padding:1px 0;display:inline-block}   /* 23px -> 25px target */
 .foot-links a:hover{color:#6EE7B7}
 .foot-note{margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);font-size:.78rem;color:#7E9A90}
 
