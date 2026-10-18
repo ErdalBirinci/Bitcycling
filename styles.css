@@ -181,10 +181,14 @@ b,strong{font-weight:700}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
 
 /* ---------- Phone frame ---------- */
-.stage{min-height:100dvh;display:grid;place-items:center;padding:0}
+.stage{min-height:100dvh;display:grid;place-items:center;padding:0;position:relative}
+#threeBg{position:absolute;inset:0;width:100%;height:100%;z-index:0;background:#031613;display:block}
 .phone{
-  position:relative;width:100%;min-height:100dvh;height:100dvh;
-  background:var(--bg);overflow:hidden;display:flex;flex-direction:column;
+  position:relative;z-index:1;width:100%;min-height:100dvh;height:100dvh;
+  background:color-mix(in srgb, var(--bg) 90%, transparent);overflow:hidden;display:flex;flex-direction:column;
+}
+@supports not (color-mix(in srgb, var(--bg), transparent)){
+  .phone{background:var(--bg)}
 }
 @media (min-width:820px){
   .stage{padding:26px 0}
