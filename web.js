@@ -198,6 +198,24 @@ const CALC_PRODUCTS = [
   { n: 'GPS Computer', p: 38 }, { n: 'Disc Wheelset', p: 95 },
   { n: 'Carbon Road Bike', p: 320 }, { n: 'Electric City Bike', p: 480 }
 ];
+
+/* product → icon map for the afford grid */
+const PRODUCT_ICO = {
+  'Electrolyte Water Bottle': 'bottle',
+  'Energy Gel · 12-pack': 'zap',
+  'Mini Air Pump': 'light',
+  'Gel-Pad Gloves': 'hand',
+  'Front + Rear Light Set': 'light',
+  'Breathable Jersey': 'shirt',
+  'Aero Sport Sunglasses': 'glasses',
+  'Vento Aero Helmet': 'helmet',
+  'Whey Protein 1kg': 'bottle',
+  'Windproof Jacket': 'shirt',
+  'GPS Computer': 'navigation',
+  'Disc Wheelset': 'wheel',
+  'Carbon Road Bike': 'bike',
+  'Electric City Bike': 'bike'
+};
 function calc() {
   const raw = Math.max(0, +$('#calcKm').value || 0);   // raw value entered by the user
   const weekly = clamp(Math.round(raw / 5) * 5, 0, 700); // weekly upper bound that can be credited
@@ -218,8 +236,22 @@ function calc() {
     ? `Average ${nf(dayKm, 1)} km a day — you're above the ${DAILY_KM} km daily cap. ${nf(raw - 700, 0)} km a week won't turn into credit; drop to 700 km a week and you'll earn the same.`
     : `You're in the clear: at ${nf(dayKm, 1)} km a day you earn ${nf(weekBtc)} BTCYC a week and ${nf(monthBtc)} BTCYC a month.`;
 
-  $('#affordChips').innerHTML = CALC_PRODUCTS.map(p =>
-    `<span class="${monthBtc >= p.p ? 'ok' : ''}">${p.n} <b>${p.p}</b></span>`).join('');
+  $('#affordChips').innerHTML = CALC_PRODUCTS.map(p => {
+    const affordable = monthBtc >= p.p;
+    const gap = Math.max(0, p.p - monthBtc);
+    const icon = PRODUCT_ICO[p.n] || 'bag';
+    return `<article class="afford-card ${affordable ? 'ok' : 'no'}" role="option"
+      aria-label="${esc(p.n)}, ${p.p} BTCYC${affordable ? ' — affordable' : ' — save ' + nf(gap, 0) + ' more BTCYC'}">
+      <span class="afford-ico">${ico(icon)}</span>
+      <div class="afford-body">
+        <div class="afford-meta">
+          <span class="afford-name">${esc(p.n)}</span>
+          <span class="afford-price"><span class="pm-coin" style="width:11px;height:11px;font-size:.5rem">₿</span>${p.p}</span>
+        </div>
+        <span class="afford-tag ${affordable ? 'ok' : 'no'}">${affordable ? 'AFFORDABLE' : 'Save ' + nf(gap, 0) + ' more'}</span>
+      </div>
+    </article>`;
+  }).join('');
 }
 
 /* ---------- demo data (only when there is no account at all) ---------- */

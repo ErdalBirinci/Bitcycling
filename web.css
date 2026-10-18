@@ -339,11 +339,33 @@ p{margin:0}
 .afford{grid-column:1/-1;background:linear-gradient(150deg,#0E2A22,#134E40 60%,#065F46);color:#fff;border:0;padding:18px}
 .afford b{color:#fff;display:flex;gap:8px;align-items:center;font-family:var(--display);font-size:1rem}
 .afford b .ico{color:#6EE7B7}
-.afford-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.afford-chips span{font-size:.78rem;font-weight:800;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.6);transition:.2s}
-.afford-chips span.ok{background:#fff;color:var(--primary-700);border-color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.18)}
-.afford-chips span.ok b{color:inherit;font-size:inherit}
+/* ---------- afford grid ---------- */
+.afford-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.afford-card{position:relative;border-radius:var(--r-lg);padding:16px 14px;display:flex;flex-direction:column;gap:10px;
+  border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow-s);transition:.25s}
+.afford-card.ok{border-color:rgba(5,150,105,.3);box-shadow:var(--shadow-m)}
+.afford-card.no{opacity:.72;filter:grayscale(.35);border-color:rgba(11,27,22,.12)}
+.afford-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-l)}
+.afford-card.no:hover{transform:none;box-shadow:var(--shadow-s)}
+.afford-ico{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-size:1.3rem;
+  background:var(--primary-tint);color:var(--primary-600);flex:none}
+.afford-card.ok .afford-ico{background:var(--primary);color:#fff}
+.afford-card.no .afford-ico{background:rgba(11,27,22,.08);color:var(--muted)}
+.afford-body{display:flex;flex-direction:column;gap:7px}
+.afford-meta{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.afford-name{font-family:var(--display);font-weight:800;font-size:.86rem;color:var(--text);line-height:1.35}
+.afford-card.no .afford-name{color:rgba(11,27,22,.55)}
+.afford-price{display:flex;align-items:center;gap:5px;font-family:var(--display);font-weight:700;font-size:.92rem;color:var(--primary-600)}
+.afford-card.no .afford-price{color:rgba(11,27,22,.5)}
+.afford-tag{font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;display:inline-block;max-width:fit-content}
+.afford-card.ok .afford-tag{background:var(--primary-soft);color:var(--primary-700);border:1px solid rgba(5,150,105,.2)}
+.afford-card.no .afford-tag{background:rgba(11,27,22,.1);color:rgba(11,27,22,.45);border:1px solid rgba(11,27,22,.16)}
+@media (max-width:900px){
+  .afford-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  .afford-grid{grid-template-columns:1fr}
+}
 
 /* ---------- features ---------- */
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
