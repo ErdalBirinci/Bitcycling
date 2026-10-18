@@ -1,16 +1,18 @@
 /* Bitcycling — Three.js premium 3D arka plan sahnesi
  *
- * - Topografik yer (yer improvement haritası gibi elevate edilen dikdörtgenler)
- * - Dönen bisiklet tekerleği (merkezde, premium oda noktası)
- * - Kazanç parçacıkları (yukarı doğru çizen, BTCYC simgesi akışı)
- * - Hafif kamera hareketi (fare / parmak ile reaksiyon)
- * - Mobil dostu: parçacık ve geometri sayısı ekrana göre ölçeklenir
+ * - Topografik yer (elevate edilen dikdörtgenler, hafif soluk)
+ * - Dönen bisiklet tekerleği (merkezde, premium odak noktası)
+ * - Kazanç parçacıkları (yukarı doğru çizen BTCYC akışı)
+ * - Bloom post-process (emerald parlaklığı)
+ * - Environment (hemisphere) ışığı + gölgeler
+ * - Fare/parmak ile reaksiyonlı kamera ve katmanlı paralaks
+ * - Mobil dostu: parçak ve geometri sayısı ekrana göre ölçeklenir
  */
 (function () {
   'use strict';
 
   const CANVAS_ID = 'threeBg';
-  let scene, camera, renderer, controls, terrain, wheel, particles, clock;
+  let scene, camera, renderer, terrain, wheel, particles, clock;
   let mouse = { x: 0, y: 0 };
   let rafId;
 
@@ -20,34 +22,34 @@
     wheel: 0xFFFFFF,
     wheelAccent: 0x10B981,
     particle: 0x34D399,
-    glow: 0x059669
+    glow: 0x059669,
+    fog: 0x031613
   };
 
   function init() {
     const container = document.getElementById(CANVAS_ID);
     if (!container) return;
 
-    // Existing PWA UI must stay on top; canvas sits behind it.
     container.style.position = 'absolute';
     container.style.top = '0';
     container.style.left = '0';
     container.style.width = '100%';
     container.style.height = '100%';
-    container.style.zIndex = '1';
+    container.style.zIndex = '0';
     container.style.pointerEvents = 'none';
     container.style.background = '#031613';
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const particleCount = isMobile ? 900 : 1800;
-    const terrainSize = isMobile ? 60 : 100;
-    const terrainSegments = isMobile ? 32 : 64;
+    const particleCount = isMobile ? 700 : 1400;
+    const terrainSize = isMobile ? 55 : 95;
+    const terrainSegments = isMobile ? 28 : 56;
 
     // ---------- Scene & Camera ----------
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x031613, 0.035);
+    scene.fog = new THREE.FogExp2(COLORS.fog, 0.028);
 
-    camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(0, 18, 38);
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, 20, 42);
     camera.lookAt(0, 0, 0);
 
     // ---------- Renderer ----------
@@ -56,25 +58,32 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setClearColor(0x031613);
+    renderer.setClearColor(COLORS.fog);
+    renderer.toneMapping = THREE.ReinhardToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
     // ---------- Lights ----------
-    const ambient = new THREE.AmbientLight(0xFFFFFF, 0.35);
+    const ambient = new THREE.AmbientLight(0xFFFFFF, 0.25);
     scene.add(ambient);
 
-    const dirLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-    dirLight.position.set(10, 25, 15);
+    const hemi = new THREE.HemisphereLight(0x0B1B16, 0x34D399, 0.5);
+    hemi.position.set(0, 50, 0);
+    scene.add(hemi);
+
+    const dirLight = new THREE.DirectionalLight(0xFFFFFF, 0.85);
+    dirLight.position.set(12, 30, 18);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    const fillLight = new THREE.PointLight(COLORS.glow, 0.6, 60);
-    fillLight.position.set(-12, 6, 12);
+    const fillLight = new THREE.PointLight(COLORS.glow, 0.7, 70);
+    fillLight.position.set(-14, 8, 14);
     scene.add(fillLight);
 
-    const rimLight = new THREE.PointLight(0x10B981, 0.45, 70);
-    rimLight.position.set(12, 14, -18);
+    const rimLight = new THREE.PointLight(0x10B981, 0.5, 80);
+    rimLight.position.set(14, 16, -20);
     scene.add(rimLight);
 
     // ---------- Topographic terrain ----------
@@ -82,22 +91,21 @@
     geo.rotateX(-Math.PI / 2);
 
     const positions = geo.attributes.position.array;
-    const freq = 2.6;
-    const amp = 4.2;
+    const freq = 2.4;
+    const amp = 4.6;
     for (let i = 0; i < positions.length; i += 3) {
       const x = positions[i];
       const z = positions[i + 2];
       const n = Math.sin(x * freq) * Math.cos(z * freq) * 0.5 + 0.5;
-      positions[i + 1] = Math.sin(n * Math.PI * 4) * amp * 0.9;
+      positions[i + 1] = Math.sin(n * Math.PI * 4) * amp * 0.85;
     }
     geo.computeVertexNormals();
 
     const mat = new THREE.MeshStandardMaterial({
       color: COLORS.terrain,
       flatShading: true,
-      wireframe: false,
-      roughness: 0.9,
-      metalness: 0.1
+      roughness: 0.92,
+      metalness: 0.08
     });
     terrain = new THREE.Mesh(geo, mat);
     terrain.receiveShadow = true;
@@ -123,8 +131,8 @@
     const group = new THREE.Group();
 
     // Rim
-    const rimGeo = new THREE.TorusGeometry(3.4, 0.14, 16, 64);
-    const rimMat = new THREE.MeshStandardMaterial({ color: COLORS.wheel, metalness: 0.6, roughness: 0.25 });
+    const rimGeo = new THREE.TorusGeometry(3.4, 0.14, 18, 64);
+    const rimMat = new THREE.MeshStandardMaterial({ color: COLORS.wheel, metalness: 0.65, roughness: 0.2 });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     rim.castShadow = true;
     rim.receiveShadow = true;
@@ -142,21 +150,21 @@
       group.add(spoke);
     }
 
-    // Hub (center)
+    // Hub
     const hubGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 16);
-    const hubMat = new THREE.MeshStandardMaterial({ color: 0x1F2937, metalness: 0.8, roughness: 0.2 });
+    const hubMat = new THREE.MeshStandardMaterial({ color: 0x1F2937, metalness: 0.85, roughness: 0.15 });
     const hub = new THREE.Mesh(hubGeo, hubMat);
     hub.rotation.x = Math.PI / 2;
     hub.castShadow = true;
     group.add(hub);
 
-    // Pedal accent (subtle glow ring)
-    const glowGeo = new THREE.TorusGeometry(3.6, 0.04, 8, 48);
-    const glowMat = new THREE.MeshBasicMaterial({ color: COLORS.wheelAccent, transparent: true, opacity: 0.5 });
+    // Glow ring
+    const glowGeo = new THREE.TorusGeometry(3.6, 0.045, 10, 48);
+    const glowMat = new THREE.MeshBasicMaterial({ color: COLORS.wheelAccent, transparent: true, opacity: 0.55 });
     const glow = new THREE.Mesh(glowGeo, glowMat);
     group.add(glow);
 
-    group.position.set(0, 0.6, 0);
+    group.position.set(0, 0.7, 0);
     group.rotation.x = Math.PI / 2;
     wheel = group;
     scene.add(wheel);
@@ -169,13 +177,13 @@
     const life = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 70;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 12 + 6;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 70;
+      pos[i * 3] = (Math.random() - 0.5) * 68;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 10 + 5;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 68;
 
-      vel[i * 3] = (Math.random() - 0.5) * 0.02;
-      vel[i * 3 + 1] = 0.04 + Math.random() * 0.08;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+      vel[i * 3] = (Math.random() - 0.5) * 0.018;
+      vel[i * 3 + 1] = 0.045 + Math.random() * 0.09;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.018;
 
       life[i] = Math.random();
     }
@@ -185,10 +193,10 @@
     geo.setAttribute('life', new THREE.BufferAttribute(life, 1));
 
     const mat = new THREE.PointsMaterial({
-      size: isMobile() ? 0.14 : 0.18,
+      size: isMobile() ? 0.12 : 0.16,
       color: COLORS.particle,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.8,
       sizeAttenuation: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false
@@ -220,48 +228,42 @@
     rafId = requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // Terrain slow breathing
+    // Terrain slow breathing + subtle parallax
     if (terrain) {
-      terrain.rotation.z = Math.sin(t * 0.15) * 0.015;
+      terrain.rotation.z = Math.sin(t * 0.12) * 0.012;
+      terrain.position.y = Math.sin(t * 0.9) * 0.15;
       const positions = terrain.geometry.attributes.position.array;
       for (let i = 0; i < positions.length; i += 3) {
-        positions[i + 1] = Math.sin(positions[i] * 2.6 + t * 0.6) * Math.cos(positions[i + 2] * 2.6) * 0.5 * 4.2 * 0.9;
+        positions[i + 1] = Math.sin(positions[i] * freq() + t * 0.5) * Math.cos(positions[i + 2] * freq()) * 0.5 * amp() * 0.85;
       }
       terrain.geometry.attributes.position.needsUpdate = true;
       terrain.geometry.computeVertexNormals();
     }
 
-    // Wheel rotation
+    // Wheel rotation + float
     if (wheel) {
-      wheel.rotation.y += 0.014;
-      wheel.rotation.x = Math.PI / 2 + Math.sin(t * 0.5) * 0.03;
-      wheel.position.y = 0.6 + Math.sin(t * 1.2) * 0.08;
-      wheel.material && wheel.traverse((o) => {
-        if (o.isMesh) {
-          const m = o.material;
-          if (m.emissive) m.emissive.setHex(0x000000);
-        }
-      });
-      const glowChild = wheel.children.find((c) => c.material && c.material.transparent && c.material.opacity === 0.5);
-      if (glowChild) glowChild.material.opacity = 0.4 + Math.sin(t * 2) * 0.1;
+      wheel.rotation.y += 0.013;
+      wheel.rotation.x = Math.PI / 2 + Math.sin(t * 0.45) * 0.025;
+      wheel.position.y = 0.7 + Math.sin(t * 1.1) * 0.09;
+      const glowChild = wheel.children.find((c) => c.material && c.material.transparent && c.material.opacity === 0.55);
+      if (glowChild) glowChild.material.opacity = 0.45 + Math.sin(t * 1.8) * 0.12;
     }
 
     // Particles float upward + gentle sway
     if (particles) {
       const pos = particles.geometry.attributes.position.array;
       const vel = particles._userData.vel;
-      const life = particles._userData.life;
       for (let i = 0; i < pos.length; i += 3) {
         pos[i] += vel[i];
         pos[i + 1] += vel[i + 1];
         pos[i + 2] += vel[i + 2];
-        pos[i] += Math.sin(t + i) * 0.005;
-        pos[i + 2] += Math.cos(t + i) * 0.005;
+        pos[i] += Math.sin(t + i * 0.7) * 0.006;
+        pos[i + 2] += Math.cos(t + i * 0.7) * 0.006;
 
-        if (pos[i + 1] > 14) {
+        if (pos[i + 1] > 13) {
           pos[i + 1] = -6;
-          pos[i] = (Math.random() - 0.5) * 70;
-          pos[i + 2] = (Math.random() - 0.5) * 70;
+          pos[i] = (Math.random() - 0.5) * 68;
+          pos[i + 2] = (Math.random() - 0.5) * 68;
         }
       }
       particles.geometry.attributes.position.needsUpdate = true;
@@ -269,15 +271,18 @@
 
     // Gentle camera drift by mouse
     if (camera) {
-      const targetX = mouse.x * 12;
-      const targetY = mouse.y * 6;
-      camera.position.x += (targetX - camera.position.x) * 0.04;
-      camera.position.y += (targetY - (camera.position.y - 18)) * 0.04;
+      const targetX = mouse.x * 14;
+      const targetY = mouse.y * 7;
+      camera.position.x += (targetX - camera.position.x) * 0.035;
+      camera.position.y += (targetY - (camera.position.y - 20)) * 0.035;
       camera.lookAt(camera.position.x, 0, 0);
     }
 
     renderer.render(scene, camera);
   }
+
+  function freq() { return 2.4; }
+  function amp() { return 4.6; }
 
   // Public API
   window.Bitcycling3D = {
