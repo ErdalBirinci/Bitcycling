@@ -340,7 +340,7 @@ p{margin:0}
 .afford b{color:#fff;display:flex;gap:8px;align-items:center;font-family:var(--display);font-size:1rem}
 .afford b .ico{color:#6EE7B7}
 /* ---------- afford grid ---------- */
-.afford-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding-right:2px}
+.afford-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding-right:24px}
 .afford-card{position:relative;border-radius:var(--r-lg);padding:16px 14px;display:flex;flex-direction:column;gap:10px;
   border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow-s);transition:.25s;overflow:hidden;max-width:100%}
 .afford-card.ok{border-color:rgba(5,150,105,.3);box-shadow:var(--shadow-m)}
