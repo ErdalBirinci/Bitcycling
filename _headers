@@ -1,7 +1,15 @@
+# NOTE: GitHub Pages IGNORES this file — it is here for Netlify/Cloudflare/etc.
+# On Pages only the HTML <meta http-equiv="Content-Security-Policy"> tags are
+# enforced (no X-Frame-Options / nosniff / CSP headers exist there at all).
+# Rule order matters on Netlify: the LAST matching rule wins per header, so the
+# long-lived cache comes first and the HTML exception comes after it.
+
+/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
-
-/*
-  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer

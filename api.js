@@ -14,7 +14,12 @@ const API = (() => {
   const TOKEN_KEY = 'bitcycling.token';
   const QUEUE_KEY = 'bitcycling.queue.v1';
 
-  const base = () => (localStorage.getItem(BASE_KEY) || '').replace(/\/+$/, '');
+  const OK_ORIGIN = /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i;
+  const base = () => {
+    const v = (localStorage.getItem(BASE_KEY) || '').replace(/\/+$/, '');
+    /* token guard: reject anything that is not a plain http(s) origin */
+    return OK_ORIGIN.test(v) ? v : '';
+  };
   const enabled = () => !!base();
   const token = () => localStorage.getItem(TOKEN_KEY) || '';
 
@@ -87,7 +92,9 @@ const API = (() => {
   return {
     enabled, base, token,
     setEndpoint(url) {
-      if (url) localStorage.setItem(BASE_KEY, url.replace(/\/+$/, ''));
+      const v = String(url || '').replace(/\/+$/, '');
+      if (v && !OK_ORIGIN.test(v)) { console.warn('api: endpoint rejected (expected http(s) origin):', v.slice(0, 80)); return; }
+      if (v) localStorage.setItem(BASE_KEY, v);
       else localStorage.removeItem(BASE_KEY);
     },
     setToken(t) { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); },

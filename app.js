@@ -458,7 +458,7 @@ function openNotifs() {
       ${S.notifs.map(n => `
         <div class="notif-row">
           <span class="list-ico ${n.icon === 'ban' ? 'red' : n.icon === 'medal' || n.icon === 'gift' ? 'gold' : 'green'}">${ico(n.icon)}</span>
-          <div class="list-body"><b>${n.text}</b><small>${ago(n.ts)}</small></div>
+          <div class="list-body"><b>${esc(n.text)}</b><small>${ago(n.ts)}</small></div>
         </div>`).join('')}
     </div>
     <button class="btn btn-soft btn-lg" data-modal-close style="width:100%;margin-top:14px">Close</button>`);
@@ -1230,8 +1230,8 @@ function renderClubs() {
     const total = cl.weekly[0] + (mine ? Math.round(km * 10) : 0);
     return `<div class="row-item club-row" data-club="${cl.id}">
       <span class="list-ico ${mine ? 'green' : ''}">${ico(cl.ico)}</span>
-      <div class="list-body"><b>${cl.name}</b>
-        <small>${cl.city} · ${cl.members + (mine ? 1 : 0)} members · this week ${nf(total / 10, 0)} km</small></div>
+      <div class="list-body"><b>${esc(cl.name)}</b>
+        <small>${esc(cl.city)} · ${cl.members + (mine ? 1 : 0)} members · this week ${nf(total / 10, 0)} km</small></div>
       <span class="pill ${mine ? 'pill-green' : 'pill-gray'}">${mine ? 'Joined' : 'Join'}</span>
     </div>`;
   }).join('');
@@ -1247,12 +1247,12 @@ function openClubBoard(id) {
   if (mine) rows.push({ n: 'You', v: Math.round(km * 10), me: true });
   rows.sort((a, b) => b.v - a.v);
   $('#clubBoard').innerHTML = `
-    <div class="section-head" style="margin-top:6px"><h3>${cl.name} — weekly</h3>
-      <span class="badge ${rows[0].me ? 'badge-gold' : 'badge-green'}">${rows[0].me ? '🏆 You lead' : rows[0].n + ' leads'}</span></div>
+    <div class="section-head" style="margin-top:6px"><h3>${esc(cl.name)} - weekly</h3>
+      <span class="badge ${rows[0].me ? 'badge-gold' : 'badge-green'}">${rows[0].me ? '🏆 You lead' : esc(rows[0].n) + ' leads'}</span></div>
     ${rows.map((r, i) => `
       <div class="list-row ${r.me ? 'is-me' : ''}">
         <span class="rank ${i === 0 ? 'crown' : i < 3 ? 'top3' : ''}">${i === 0 ? ico('crown') : (i + 1)}</span>
-        <span class="list-body"><b>${r.n}</b><small>${nf(r.v / 10, 0)} km this week</small></span>
+        <span class="list-body"><b>${esc(r.n)}</b><small>${nf(r.v / 10, 0)} km this week</small></span>
         <span class="list-amt">${mine && r.me ? '<span class="pill pill-green">You</span>' : ''}</span>
       </div>`).join('')}
     ${mine ? '' : `<button class="btn btn-primary btn-lg" id="clubJoinBtn" style="width:100%;margin-top:12px">Join this club</button>`}`;
@@ -1604,7 +1604,7 @@ function renderHome() {
   $('#streakChip').style.display = streak > 0 ? '' : 'none';
   $('#streakNum').textContent = streak;
 
-  const av = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : initials(u.name, u.surname);
+  const av = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : esc(initials(u.name, u.surname));
   $('#homeAvatar').innerHTML = av;
   setNum($('#chipBalance'), S.balance);
   setNum($('#heroBalance'), S.balance);
@@ -1628,7 +1628,7 @@ function renderHome() {
   $('#homeBoard').innerHTML = all.slice(0, 5).map((r, i) => `
     <div class="list-row" ${r.me ? 'style="background:var(--primary-tint)"' : ''}>
       <span class="list-ico ${i < 3 ? 'gold' : 'blue'}">${i + 1}</span>
-      <div class="list-body"><b>${r.n}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km · this month</small></div>
+      <div class="list-body"><b>${esc(r.n)}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km · this month</small></div>
       <span class="list-amt">${ico(i === 0 ? 'crown' : 'medal')}</span>
     </div>`).join('');
   $('#notifDot').style.display = idx <= 10 && (S.notifs || []).some(n => !n.read) ? '' : 'none';
@@ -1785,7 +1785,7 @@ function renderEvents() {
   $('#eventsBoard').innerHTML = all.map((r, i) => `
     <div class="list-row" ${r.me ? 'style="background:var(--primary-tint)"' : ''}>
       <span class="list-ico ${i < 3 ? 'gold' : 'green'}">${i + 1}</span>
-      <div class="list-body"><b>${r.n}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km</small>
+      <div class="list-body"><b>${esc(r.n)}${r.me ? ' (you)' : ''}</b><small>${nf(r.km, 1)} km</small>
         <span class="mini-bar"><i style="width:${Math.max(4, Math.round(r.km / top * 100))}%"></i></span></div>
       <span class="list-amt ${r.me ? 'plus' : ''}">${i < 3 ? ico(i === 0 ? 'trophy' : 'medal') : ''}</span>
     </div>`).join('');
@@ -1961,7 +1961,7 @@ function sendTransfer() {
   openModal(`
     <div class="ok-badge">✓</div>
     <h3 style="text-align:center">Transfer complete</h3>
-    <p class="lead" style="text-align:center">${rec.name} (${rec.handle}) — ${nf(amt)} BTCYC transferred.</p>
+    <p class="lead" style="text-align:center">${esc(rec.name)} (${esc(rec.handle)}) — ${nf(amt)} BTCYC transferred.</p>
     <div class="summary-grid">
       <div><b>${nf(amt)}</b><small>sent</small></div>
       <div><b>${nf(S.balance)}</b><small>remaining balance</small></div>
@@ -2138,8 +2138,8 @@ function renderSessions() {
   $('#sessionList').innerHTML = S.sessions.map(s => `
     <div class="list-row">
       <span class="list-ico ${s.current ? 'green' : 'blue'}">${ico(s.current ? 'phone' : 'laptop')}</span>
-      <div class="list-body"><b>${s.dev}${s.current ? ' · active now' : ''}</b>
-        <small>${s.loc} · last sign-in ${ago(s.ts)}</small></div>
+      <div class="list-body"><b>${esc(s.dev)}${s.current ? ' · active now' : ''}</b>
+        <small>${esc(s.loc)} · last sign-in ${ago(s.ts)}</small></div>
       ${s.current ? '<span class="pill pill-green">This device</span>'
                   : `<button class="row-act" data-session-close="${s.id}">Close</button>`}
     </div>`).join('');
@@ -2157,7 +2157,7 @@ function renderFriends() {
 
 function renderProfile() {
   const u = S.user || {};
-  $('#profileAvatar').innerHTML = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : initials(u.name, u.surname);
+  $('#profileAvatar').innerHTML = u.selfie ? `<img src="${escAttr(u.selfie)}" alt="" />` : esc(initials(u.name, u.surname));
   $('#profileName').textContent = [u.name, u.surname].filter(Boolean).join(' ') || 'Bitcycling User';
   $('#profileEmail').textContent = u.email || '—';
   $('#profilePhone').textContent = u.phone || '—';

@@ -27,6 +27,13 @@
   };
 
   function init() {
+    /* CDN guard: three.min.js can fail to load (offline / CDN outage) - never throw, just hide */
+    if (typeof THREE === 'undefined') {
+      window.__threeFailed = true;
+      const gone = document.getElementById(CANVAS_ID);
+      if (gone) gone.remove();
+      return;
+    }
     const container = document.getElementById(CANVAS_ID);
     if (!container) return;
 

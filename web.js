@@ -16,7 +16,11 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const pad = n => String(n).padStart(2, '0');
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const esc = s => String(s ?? '').replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+/* only ever allow data:image URLs through, so a selfie cannot become javascript: or an attribute break-out */
+const safeUrl = s => /^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(String(s || '')) ? String(s) : '';
+/* escape a value that is meant to be used inside an attribute */
+const escAttr = s => safeUrl(s) ? safeUrl(s) : esc(s);
 
 function ago(ts) {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -449,7 +453,7 @@ function renderNotifs() {
 }
 function renderProfile() {
   const u = S.user || {};
-  const av = u.selfie ? `<img src="${u.selfie}" alt="" />` : initials(u.name, u.surname);
+  const av = u.selfie && safeUrl(u.selfie) ? `<img src="${safeUrl(u.selfie)}" alt="" />` : esc(initials(u.name, u.surname));
   $('#pName').textContent = `${u.name || ''} ${u.surname || ''}`.trim() || 'User';
   $('#pAvatar').innerHTML = av;
   $('#profAvatar').innerHTML = av;
@@ -581,7 +585,7 @@ function renderPhoneMock() {
   const chip = $('.pm-streak');
   chip.style.display = streak > 0 ? '' : 'none';
   $('#pmStreak').textContent = streak;
-  $('#pmAvatar').innerHTML = u.selfie ? `<img src="${/^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/.test(u.selfie) ? u.selfie : ''}" alt="" />` : esc(initials(u.name, u.surname));
+  $('#pmAvatar').innerHTML = u.selfie && safeUrl(u.selfie) ? `<img src="${safeUrl(u.selfie)}" alt="" />` : esc(initials(u.name, u.surname));
   $('#pmChipBal').textContent = nf(S.balance);
   $('#pmBalance').textContent = nf(S.balance);
   $('#pmFiat').textContent = `≈ ${money(S.balance)} in value`;
