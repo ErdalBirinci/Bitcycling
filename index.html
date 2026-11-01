@@ -245,6 +245,38 @@
       </div>
     </section>
 
+    <!-- PIXEL FILM -->
+    <section class="band alt" id="film">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eyebrow"><span data-ico="play"></span> Watch the story</span>
+          <h2>The whole project in 40 seconds</h2>
+          <p>Eight pixel scenes that explain the idea from start to finish: ride, earn, trade, ride together.</p>
+        </div>
+        <div class="film-shell reveal">
+          <div class="film-screen">
+            <canvas id="pixelFilm" width="384" height="216"
+                    role="img"
+                    aria-label="Animated pixel film explaining Bitcycling: riding earns BTCYC, GPS tracks kilometres fairly, and coins trade for real gear.">
+              Your browser does not support canvas. The film shows riders earning BTCYC for every
+              20 km, GPS-tracked fair play, a market for real gear, and weekly club tournaments.
+            </canvas>
+          </div>
+          <div class="film-controls">
+            <button type="button" class="film-btn" id="filmToggle" aria-label="Play the film">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </button>
+            <div class="film-track" aria-hidden="true"><i id="filmFill"></i></div>
+            <button type="button" class="film-btn" id="filmReplay" aria-label="Replay the film from the beginning">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+            </button>
+            <span class="film-hint">Space to play / pause</span>
+          </div>
+          <div class="film-chips" id="filmChapters" role="group" aria-label="Film chapters"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- EARNINGS + CALCULATOR -->
     <section class="band" id="earn">
       <div class="wrap">
@@ -691,6 +723,7 @@
 
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="three-scene.js"></script>
+<script src="pixel-video.js"></script>
 <script src="web.js"></script>
 </body>
 </html>

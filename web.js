@@ -73,6 +73,7 @@ const ICONS = {
   package: '<path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="m7.5 4.3 9 5.1"/>',
   light: '<path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M6 6h12"/><path d="M12 12h.01"/>',
   navigation: '<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+  play: '<path d="M7 4.5v15l12-7.5z"/>',
   helmet: '<path d="M3 17v-2a9 9 0 0 1 18 0v2"/><path d="M2 17h20v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><path d="M12 6.5V3"/><path d="M8 8.5 12 5l4 3.5"/>',
   crown: '<path d="m2 6 4.5 4.5L12 4l5.5 6.5L22 6l-2 12H4L2 6z"/><path d="M4 20h16"/>',
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
